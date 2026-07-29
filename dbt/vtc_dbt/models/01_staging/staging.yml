@@ -1,0 +1,21 @@
+version: 2
+
+sources:
+  - name: raw
+    database: vtc_db
+    schema: raw
+    tables:
+      - name: drivers
+      - name: cars
+      - name: users
+      - name: trip
+
+models:
+  - name: staging__drivers
+    description: "Última versión por id de cada conductor"
+  - name: staging__cars
+    description: "Última versión por id de cada coche"
+  - name: staging__users
+    description: "Última versión por id de cada usuario"
+  - name: staging__trips
+    description: "Última versión por id de cada viaje"

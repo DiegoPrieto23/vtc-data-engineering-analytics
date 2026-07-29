@@ -1,0 +1,22 @@
+name: 'vtc_dbt'
+version: '1.0.0'
+config-version: 2
+
+profile: 'vtc_dbt'
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+target-path: "target"
+clean-targets: ["target"]
+
+models:
+  vtc_dbt:
+    01_staging:
+      +schema: staging
+      +materialized: table
+    02_core:
+      +schema: core
+      +materialized: table
+    03_analytics:
+      +schema: analytics
+      +materialized: view

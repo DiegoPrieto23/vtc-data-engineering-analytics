@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: vtc_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: vtc_dwh
+      POSTGRES_DB: vtc_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: vtc_app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PG_HOST: postgres
+      PG_PORT: 5432
+      PG_USER: postgres
+      PG_PASSWORD: vtc_dwh
+      PG_DB: vtc_db
+      PIPELINE_TARGET: all  # o 'drivers', 'trips', etc.
+    volumes:
+      - .:/app
+    command: ["python", "-m", "src.main"]
+
+volumes:
+  postgres_data:

@@ -1,0 +1,26 @@
+# ==========================
+# Python
+# ==========================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.DS_Store
+
+# ==========================
+# dbt generated files
+# ==========================
+dbt/vtc_dbt/target/
+dbt/vtc_dbt/logs/
+dbt/vtc_dbt/dbt_packages/
+dbt/vtc_dbt/.user.yml
+
+# ==========================
+# Runtime logs
+# ==========================
+logs/
+
+# ==========================
+# Local environments
+# ==========================
+.venv/

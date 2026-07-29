@@ -1,0 +1,26 @@
+version: 2
+
+models:
+  - name: dim__users
+    description: "Dimensión de usuarios enriquecida con idioma y país"
+    tests:
+      - not_null:
+          column_name: user_id
+
+  - name: dim__drivers
+    description: "Dimensión de conductores con su estado y días activos"
+    tests:
+      - not_null:
+          column_name: driver_id
+
+  - name: dim__cars
+    description: "Dimensión de coches con vida útil y número de productos"
+    tests:
+      - not_null:
+          column_name: car_id
+
+  - name: fact__trips
+    description: "Tabla de hechos que une usuarios, conductores y coches con información de los viajes"
+    tests:
+      - not_null:
+          column_name: trip_id
