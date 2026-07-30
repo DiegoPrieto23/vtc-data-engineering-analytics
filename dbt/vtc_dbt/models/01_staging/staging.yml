@@ -2,7 +2,7 @@ version: 2
 
 sources:
   - name: raw
-    database: vtc_db
+    database: "{{ env_var('PG_DB') }}"
     schema: raw
     tables:
       - name: drivers

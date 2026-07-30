@@ -5,15 +5,15 @@ services:
     image: postgres:16
     container_name: vtc_postgres
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: vtc_dwh
-      POSTGRES_DB: vtc_db
+      POSTGRES_USER: ${PG_USER:?define PG_USER en el fichero .env}
+      POSTGRES_PASSWORD: ${PG_PASSWORD:?define PG_PASSWORD en el fichero .env}
+      POSTGRES_DB: ${PG_DB:?define PG_DB en el fichero .env}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -27,10 +27,10 @@ services:
     environment:
       PG_HOST: postgres
       PG_PORT: 5432
-      PG_USER: postgres
-      PG_PASSWORD: vtc_dwh
-      PG_DB: vtc_db
-      PIPELINE_TARGET: all  # o 'drivers', 'trips', etc.
+      PG_USER: ${PG_USER:?define PG_USER en el fichero .env}
+      PG_PASSWORD: ${PG_PASSWORD:?define PG_PASSWORD en el fichero .env}
+      PG_DB: ${PG_DB:?define PG_DB en el fichero .env}
+      PIPELINE_TARGET: ${PIPELINE_TARGET:-all}  # o 'drivers', 'trips', etc.
     volumes:
       - .:/app
     command: ["python", "-m", "src.main"]

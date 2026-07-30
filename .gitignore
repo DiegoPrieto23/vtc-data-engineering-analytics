@@ -8,7 +8,7 @@ __pycache__/
 *.DS_Store
 
 # ==========================
-# dbt generated files
+# Ficheros generados por dbt
 # ==========================
 dbt/vtc_dbt/target/
 dbt/vtc_dbt/logs/
@@ -16,11 +16,20 @@ dbt/vtc_dbt/dbt_packages/
 dbt/vtc_dbt/.user.yml
 
 # ==========================
-# Runtime logs
+# Logs de ejecución
 # ==========================
 logs/
 
 # ==========================
-# Local environments
+# Entornos locales
 # ==========================
 .venv/
+
+# ==========================
+# Secretos y configuración local
+# ==========================
+# Nunca subir el .env: contiene credenciales.
+# La plantilla versionada es .env.example
+.env
+.env.*
+!.env.example
