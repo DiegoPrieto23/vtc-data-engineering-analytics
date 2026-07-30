@@ -9,7 +9,7 @@ from src.utils.load_ndjson import load_ndjson
 
 
 def ensure_schemas():
-    """Creates the base schemas if they do not exist."""
+    """Crea los esquemas base si no existen."""
     conn = get_connection()
     conn.autocommit = True
     cur = conn.cursor()
@@ -20,9 +20,9 @@ def ensure_schemas():
 
 
 def initial_load(extract_zip=False):
-    """Extracts, cleans, and inserts driver data into the database (raw schema)."""
+    """Extrae, limpia e inserta los datos de conductores en la base de datos (esquema raw)."""
     print("\n==============================")
-    print("🚗 [START] Incremental load of DRIVERS")
+    print("🚗 [INICIO] Carga incremental de CONDUCTORES")
     print("==============================\n")
 
     ensure_schemas()
@@ -32,10 +32,10 @@ def initial_load(extract_zip=False):
     json_path = os.path.join(extracted_dir, "drivers.json")
 
     if not os.path.exists(json_path):
-        raise FileNotFoundError(f"{json_path} not found. Please run unzip_dataset().")
+        raise FileNotFoundError(f"No se ha encontrado {json_path}. Ejecuta antes unzip_dataset().")
 
     df = load_ndjson(json_path)
-    print(f"[INFO] {len(df)} records loaded from drivers.json")
+    print(f"[INFO] {len(df)} registros cargados desde drivers.json")
 
     conn = get_connection()
     cur = conn.cursor()
@@ -51,7 +51,7 @@ def initial_load(extract_zip=False):
     );
     """
     cur.execute(create_table_sql)
-    print("[OK] Table raw.drivers created or already exists")
+    print("[OK] Tabla raw.drivers creada o ya existente")
 
     cols = list(df.columns)
     values = [tuple(x) for x in df.to_numpy()]
@@ -65,5 +65,5 @@ def initial_load(extract_zip=False):
 
     cur.close()
     conn.close()
-    print(f"[OK] {len(values)} rows processed (new inserted, duplicates ignored)")
-    print("\n✅ [DONE] Incremental load of DRIVERS completed.\n")
+    print(f"[OK] {len(values)} filas procesadas (se insertan las nuevas y se ignoran las duplicadas)")
+    print("\n✅ [FIN] Carga incremental de CONDUCTORES completada.\n")

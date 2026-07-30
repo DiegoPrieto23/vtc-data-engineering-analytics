@@ -1,34 +1,37 @@
-# Cloud Architecture Design
+# Diseño de la arquitectura en cloud
 
-## 💻 Current Setup (Local / Docker)
-The project runs locally using Docker.
-The `main.py` script executes the entire process (all the 4 models):
-1. Extract and clean raw data from the dataset.zip
-2. Load it into a PostgreSQL database (raw schema)
-3. Run **dbt** transformations to create the following schemas (staging, core and analytics)
+## 💻 Montaje actual (local / Docker)
+El proyecto se ejecuta en local mediante Docker.
+El script `main.py` ejecuta el proceso completo (los 4 modelos):
+1. Extraer y limpiar los datos en bruto de `dataset.zip`
+2. Cargarlos en una base de datos PostgreSQL (esquema `raw`)
+3. Ejecutar las transformaciones de **dbt** para crear el resto de esquemas (`staging`, `core` y `analytics`)
 
-Both the application and database run inside Docker containers.
+Tanto la aplicación como la base de datos se ejecutan dentro de contenedores Docker.
 
-## ☁️ Cloud Deployment Proposal
-If we were to deploy an app like this into the Cloud, this same logic could be deployed in a more automated way making use of the following resources (we will do the example using AWS):
-### 1. Compute Layer
-- Use AWS ECS (Elastic Container Service) or EKS (Kubernetes Service) to run the Docker containers. Note that running this app on Kubernetes services would enable a cloud-agnostic architecture, meaning that migrating from one cloud provider to another would require minimal effort.
-- The system can scale automatically if the data volume grows.
+## ☁️ Propuesta de despliegue en cloud
+Si quisiéramos desplegar una aplicación como esta en la nube, esta misma lógica podría implantarse de forma mucho más automatizada usando los siguientes recursos (el ejemplo está planteado sobre AWS):
 
-### 2. Database Layer
-- Replace the local PostgreSQL container with Amazon RDS for PostgreSQL.
-- This ensures high availability, automatic backups, managed updates, autoscaling, security, etc.
+### 1. Capa de cómputo
+- Usar AWS ECS (Elastic Container Service) o EKS (servicio de Kubernetes) para ejecutar los contenedores Docker. Conviene señalar que ejecutar esta aplicación sobre Kubernetes permitiría una arquitectura *cloud-agnostic*, de modo que migrar de un proveedor a otro requeriría un esfuerzo mínimo.
+- El sistema puede escalar automáticamente si crece el volumen de datos.
 
-### 3. Storage Layer
-- Raw and intermediate data files (like the dataset.zip) can be stored in Amazon S3, a secure and scalable cloud storage.
-- This makes the data accessible for other systems or analytics tools.
+### 2. Capa de base de datos
+- Sustituir el contenedor local de PostgreSQL por Amazon RDS para PostgreSQL.
+- Esto aporta alta disponibilidad, copias de seguridad automáticas, actualizaciones gestionadas, autoescalado, seguridad, etc.
 
-### 4. Orchestration and Scheduling
-- Use Apache Airflow or similar to schedule and monitor all steps.
-- Airflow will trigger the Docker containers in the right order for the ELT (extract → load → transform).
+### 3. Capa de almacenamiento
+- Los ficheros de datos en bruto e intermedios (como `dataset.zip`) pueden almacenarse en Amazon S3, un almacenamiento en la nube seguro y escalable.
+- Así los datos quedan accesibles para otros sistemas o herramientas de analítica.
 
-### 5. Monitoring and Logs
-- Use Amazon CloudWatch to store logs, detect errors, and trigger alerts automatically.
-- This improves fault tolerance and helps identify performance issues.
+### 4. Orquestación y planificación
+- Usar Apache Airflow o similar para planificar y monitorizar todos los pasos.
+- Airflow lanzaría los contenedores Docker en el orden correcto del ELT (extracción → carga → transformación).
 
+### 5. Monitorización y logs
+- Usar Amazon CloudWatch para almacenar los logs, detectar errores y disparar alertas automáticamente.
+- Esto mejora la tolerancia a fallos y ayuda a identificar problemas de rendimiento.
 
+### 6. Gestión de secretos
+- Las credenciales de la base de datos no deben viajar en el repositorio ni en las definiciones de los contenedores.
+- Usar AWS Secrets Manager (o SSM Parameter Store) e inyectarlas en tiempo de ejecución mediante la definición de tarea de ECS o los secretos de Kubernetes, con rotación automática activada.

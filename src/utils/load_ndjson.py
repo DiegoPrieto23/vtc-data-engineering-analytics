@@ -5,13 +5,13 @@ import os
 
 def repair_line(line: str) -> str:
     """
-    Attempts to repair common errors in the 'stops' field of trip.json.
-    Returns the possibly corrected line (without guaranteeing it is valid JSON).
+    Intenta reparar los errores habituales del campo 'stops' de trip.json.
+    Devuelve la línea posiblemente corregida (sin garantizar que sea JSON válido).
     """
 
     fixed = line
 
-    # Specific case detected: ...]}}]}  →  ...]}]} closes 'stops' incorrectly: there is an extra '}'
+    # Caso concreto detectado: ...]}}]}  →  ...]}]} cierra mal 'stops': sobra una '}'
     fixed = fixed.replace("]}}]}", "]}]}")
 
     return fixed
@@ -19,10 +19,11 @@ def repair_line(line: str) -> str:
 
 def load_ndjson(file_path: str, save_invalid: bool = True, invalid_dir: str = "data/invalid") -> pd.DataFrame:
     """
-    Loads an NDJSON file, attempting to repair some corrupted lines (such as improperly closed 'stops').
+    Carga un fichero NDJSON intentando reparar algunas líneas corruptas
+    (como un 'stops' mal cerrado).
 
-    - Returns only valid records.
-    - Saves unparseable lines to a CSV file for later analysis.
+    - Devuelve únicamente los registros válidos.
+    - Guarda en un CSV las líneas no parseables para analizarlas más adelante.
     """
     data = []
     invalid_records = []
@@ -35,7 +36,7 @@ def load_ndjson(file_path: str, save_invalid: bool = True, invalid_dir: str = "d
             if not raw_line:
                 continue
 
-            # 1st attempt: try line as-is
+            # 1er intento: probar la línea tal cual
             try:
                 record = json.loads(raw_line)
                 data.append(record)
@@ -43,7 +44,7 @@ def load_ndjson(file_path: str, save_invalid: bool = True, invalid_dir: str = "d
             except json.JSONDecodeError:
                 pass
 
-            # 2nd attempt: repair and try again
+            # 2.º intento: reparar y volver a probar
             fixed = repair_line(raw_line)
             try:
                 record = json.loads(fixed)
@@ -51,7 +52,7 @@ def load_ndjson(file_path: str, save_invalid: bool = True, invalid_dir: str = "d
                 repaired_count += 1
                 continue
             except json.JSONDecodeError:
-                # Still invalid → store as invalid record
+                # Sigue siendo inválida → se guarda como registro inválido
                 invalid_records.append({
                     "file": file_name,
                     "line_number": line_number,
@@ -61,15 +62,15 @@ def load_ndjson(file_path: str, save_invalid: bool = True, invalid_dir: str = "d
     valid_count = len(data)
     invalid_count = len(invalid_records)
 
-    print(f"✅ {valid_count} valid records loaded from {file_name}.")
-    print(f"🔧 {repaired_count} lines were automatically repaired.")
+    print(f"✅ {valid_count} registros válidos cargados desde {file_name}.")
+    print(f"🔧 {repaired_count} líneas se repararon automáticamente.")
     if invalid_count > 0:
-        print(f"⚠️ {invalid_count} lines could not be parsed and were recorded.")
+        print(f"⚠️ {invalid_count} líneas no se han podido parsear y se han registrado.")
 
         if save_invalid:
             os.makedirs(invalid_dir, exist_ok=True)
             invalid_path = os.path.join(invalid_dir, f"invalid_{file_name}.csv")
             pd.DataFrame(invalid_records).to_csv(invalid_path, index=False)
-            print(f"📝 Invalid lines saved to: {invalid_path}")
+            print(f"📝 Líneas inválidas guardadas en: {invalid_path}")
 
     return pd.DataFrame(data)

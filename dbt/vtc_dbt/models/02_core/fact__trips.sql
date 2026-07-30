@@ -6,7 +6,7 @@
 }}
 
 -- ============================================================
--- CTE 1: Aggregate trip events to compute duration metrics
+-- CTE 1: Agregar los eventos del viaje para calcular las métricas de duración
 -- ============================================================
 WITH trip_events AS (
     SELECT
@@ -25,9 +25,9 @@ duration_calc AS (
         first_created_at,
         last_updated_at,
         final_reason,
-        -- Total trip time (in minutes)
+        -- Tiempo total del viaje (en minutos)
         EXTRACT(EPOCH FROM (last_updated_at - first_created_at)) / 60 AS trip_duration_minutes,
-        -- Effective time (last - second-to-last updated_at)
+        -- Tiempo efectivo (último - penúltimo updated_at)
         CASE
             WHEN array_length(updated_list, 1) > 1
                 THEN EXTRACT(EPOCH FROM (updated_list[array_length(updated_list, 1)] - updated_list[array_length(updated_list, 1) - 1])) / 60
@@ -49,7 +49,7 @@ waiting_calc AS (
 ),
 
 -- ============================================================
--- CTE 2: Assign time zone offset by user's country
+-- CTE 2: Asignar el desfase horario según el país del usuario
 -- ============================================================
 localized_trips AS (
     SELECT
@@ -73,7 +73,7 @@ localized_trips AS (
 ),
 
 -- ============================================================
--- CTE 3: Apply time zone offset to all datetime columns
+-- CTE 3: Aplicar el desfase horario a todas las columnas de fecha y hora
 -- ============================================================
 trips_localized AS (
     SELECT
@@ -83,12 +83,12 @@ trips_localized AS (
         t.user_id,
         t.locale_country,
 
-        -- Convert all timestamps to local time
+        -- Convertir todas las marcas de tiempo a hora local
         t.created_at + t.tz_offset AS created_at_local,
         t.updated_at + t.tz_offset AS updated_at_local,
         t.start_at + t.tz_offset AS start_at_local,
 
-        -- Adjust duration reference times as well
+        -- Ajustar también los tiempos de referencia de las duraciones
         w.first_created_at + t.tz_offset AS first_created_at_local,
         w.last_updated_at + t.tz_offset AS last_updated_at_local,
 
@@ -100,7 +100,7 @@ trips_localized AS (
 )
 
 -- ============================================================
--- CTE 4: Build the final fact table
+-- CTE 4: Construir la tabla de hechos final
 -- ============================================================
 SELECT
     t.trip_id,
@@ -108,7 +108,7 @@ SELECT
     t.updated_at_local AS updated_at,
     t.start_at_local AS start_at,
 
-    -- Localized date/time components
+    -- Componentes de fecha y hora ya localizados
     CAST(EXTRACT(ISODOW FROM t.start_at_local) AS INT) AS week_day,
     DATE(t.start_at_local) AS start_day,
     CAST(EXTRACT(DAY FROM t.start_at_local) AS INT) AS start_date,
@@ -121,13 +121,13 @@ SELECT
     t.user_id,
     NULLIF(TRIM(COALESCE(t.reason, '')), '') AS reason,
 
-    -- Start and end coordinates
+    -- Coordenadas de inicio y de fin
     (t.stops->0->'loc'->>0)::float AS start_lat,
     (t.stops->0->'loc'->>1)::float AS start_lon,
     (t.stops->1->'loc'->>0)::float AS end_lat,
     (t.stops->1->'loc'->>1)::float AS end_lon,
 
-    -- Duration metrics (calculated in minutes)
+    -- Métricas de duración (calculadas en minutos)
     CASE 
         WHEN t.reason IS NOT NULL THEN w.trip_duration_minutes 
         ELSE NULL 
@@ -143,10 +143,10 @@ SELECT
         ELSE NULL 
     END AS waiting_time_minutes,
 
-    -- Price (only when reason is provided)
+    -- Precio (solo cuando reason viene informado)
     CASE WHEN TRIM(COALESCE(t.reason, '')) <> '' THEN t.price ELSE NULL END AS price,
 
-    -- Exchange rate by country
+    -- Tipo de cambio por país
     CASE
         WHEN t.locale_country = 'AR' THEN 0.001
         WHEN t.locale_country = 'CO' THEN 0.00023
@@ -158,7 +158,7 @@ SELECT
         ELSE 1.0
     END AS exchange_rate,
 
-    -- Price converted to EUR
+    -- Precio convertido a EUR
     CASE
         WHEN TRIM(COALESCE(t.reason, '')) <> '' THEN
             ROUND(

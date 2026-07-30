@@ -10,7 +10,7 @@ from src.utils.load_ndjson import load_ndjson
 
 
 def ensure_schemas():
-    """Creates the base schemas if they do not exist."""
+    """Crea los esquemas base si no existen."""
     conn = get_connection()
     conn.autocommit = True
     cur = conn.cursor()
@@ -21,9 +21,9 @@ def ensure_schemas():
 
 
 def initial_load(extract_zip=False):
-    """Incremental load of cars into the database (raw schema)."""
+    """Carga incremental de vehículos en la base de datos (esquema raw)."""
     print("\n==============================")
-    print("🚙 [START] Incremental load of CARS")
+    print("🚙 [INICIO] Carga incremental de VEHÍCULOS")
     print("==============================\n")
 
     ensure_schemas()
@@ -33,10 +33,10 @@ def initial_load(extract_zip=False):
     json_path = os.path.join(extracted_dir, "cars.json")
 
     if not os.path.exists(json_path):
-        raise FileNotFoundError(f"{json_path} not found. Please run unzip_dataset().")
+        raise FileNotFoundError(f"No se ha encontrado {json_path}. Ejecuta antes unzip_dataset().")
 
     df = load_ndjson(json_path)
-    print(f"[INFO] {len(df)} records loaded from cars.json")
+    print(f"[INFO] {len(df)} registros cargados desde cars.json")
 
     if "product_ids" in df.columns:
         df["product_ids"] = df["product_ids"].apply(
@@ -60,7 +60,7 @@ def initial_load(extract_zip=False):
     );
     """
     cur.execute(create_table_sql)
-    print("[OK] Table raw.cars created or already exists")
+    print("[OK] Tabla raw.cars creada o ya existente")
 
     cols = list(df.columns)
     values = [tuple(x) for x in df.to_numpy()]
@@ -74,5 +74,5 @@ def initial_load(extract_zip=False):
 
     cur.close()
     conn.close()
-    print(f"[OK] {len(values)} rows processed (new inserted, duplicates ignored)")
-    print("\n✅ [DONE] Incremental load of CARS completed.\n")
+    print(f"[OK] {len(values)} filas procesadas (se insertan las nuevas y se ignoran las duplicadas)")
+    print("\n✅ [FIN] Carga incremental de VEHÍCULOS completada.\n")

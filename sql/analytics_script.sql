@@ -1,86 +1,88 @@
 -- =============================================================
--- BUSINESS METRICS
+-- MÉTRICAS DE NEGOCIO
 -- =============================================================
 
--- Global business performance overview:
--- Shows total trips, valid trips (with price), average times and aggregated revenue metrics.
+-- Visión global del rendimiento del negocio:
+-- muestra el total de viajes, los viajes válidos (con precio), los tiempos medios
+-- y las métricas de ingresos agregadas.
 SELECT * FROM analytics.business_overview;
 
--- Revenue and profitability metrics by country.
+-- Métricas de ingresos y rentabilidad por país.
 SELECT * FROM analytics.revenue_by_country;
 
--- Temporal evolution of revenue aggregated by day, month, and year.
+-- Evolución temporal de los ingresos agregados por día, mes y año.
 SELECT * FROM analytics.revenue_over_time;
 
 -- =============================================================
--- DRIVERS AND OPERATIONS
+-- CONDUCTORES Y OPERACIONES
 -- =============================================================
 
--- Driver performance: number of trips, revenue, and average duration.
+-- Rendimiento de los conductores: número de viajes, ingresos y duración media.
 SELECT * FROM analytics.driver_performance;
 
--- Average, minimum, and maximum number of driver changes per trip.
+-- Número medio, mínimo y máximo de cambios de conductor por viaje.
 SELECT * FROM analytics.driver_changes_summary;
 
--- Performance analysis by car type: revenue and average duration.
+-- Análisis de rendimiento por tipo de vehículo: ingresos y duración media.
 SELECT * FROM analytics.car_type_performance;
 
 -- =============================================================
--- USERS AND DEMAND
+-- USUARIOS Y DEMANDA
 -- =============================================================
 
--- User behavior: number of trips, total spending, and activity dates.
+-- Comportamiento de los usuarios: número de viajes, gasto total y fechas de actividad.
 SELECT * FROM analytics.user_behavior;
 
--- User distribution by country, showing average trips and spending per user.
+-- Distribución de usuarios por país, con la media de viajes y de gasto por usuario.
 SELECT * FROM analytics.user_distribution;
 
 -- =============================================================
--- TEMPORAL AND SEASONAL ANALYSIS
+-- ANÁLISIS TEMPORAL Y ESTACIONAL
 -- =============================================================
 
--- Volume, price, and average trip duration by hour of the day.
+-- Volumen, precio y duración media de los viajes por hora del día.
 SELECT * FROM analytics.trips_by_hour;
 
--- Volume, price, and average trip duration by day of the week.
+-- Volumen, precio y duración media de los viajes por día de la semana.
 SELECT * FROM analytics.trips_by_weekday;
 
 -- =============================================================
--- GEOGRAPHIC ANALYSIS
+-- ANÁLISIS GEOGRÁFICO
 -- =============================================================
 
--- Top 5 most frequent routes by country (based on origin and destination coordinates).
+-- Las 5 rutas más frecuentes por país (según las coordenadas de origen y destino).
 SELECT * FROM analytics.top_routes_by_country;
 
--- Most frequent starting points (hotspots) by country.
+-- Puntos de origen más frecuentes (hotspots) por país.
 SELECT * FROM analytics.hotspots_start;
 
--- Most frequent destination points (hotspots) by country.
+-- Puntos de destino más frecuentes (hotspots) por país.
 SELECT * FROM analytics.hotspots_end;
 
 -- =============================================================
--- ECONOMIC ANALYSIS
+-- ANÁLISIS ECONÓMICO
 -- =============================================================
 
--- Price distribution: total trips, valid trips, positive-price trips, and price statistics.
+-- Distribución de precios: total de viajes, viajes válidos, viajes con precio positivo
+-- y estadísticas de precio.
 SELECT * FROM analytics.price_distribution;
 
 -- =============================================================
--- TRIP QUALITY AND DURATION
+-- CALIDAD Y DURACIÓN DE LOS VIAJES
 -- =============================================================
 
--- Trip completion statistics (reason): count and proportion of each type.
+-- Estadísticas de finalización de los viajes (reason): recuento y proporción de cada tipo.
 SELECT * FROM analytics.trip_completion_stats;
 
--- Distribution of trip durations grouped by intervals (<5, 5–10, 10–20, etc.).
+-- Distribución de las duraciones de los viajes agrupadas por intervalos (<5, 5-10, 10-20, etc.).
 SELECT * FROM analytics.effective_duration_distribution;
 
 -- =============================================================
--- ENTITY SUMMARY AND TENURE
+-- RESUMEN POR ENTIDAD Y ANTIGÜEDAD
 -- =============================================================
 
--- Country summary: users, drivers, number of trips, and revenue.
+-- Resumen por país: usuarios, conductores, número de viajes e ingresos.
 SELECT * FROM analytics.country_summary;
 
--- Tenure distribution (years registered) of users, drivers, and cars.
+-- Distribución de la antigüedad (años registrados) de usuarios, conductores y vehículos.
 SELECT * FROM analytics.tenure_distribution;

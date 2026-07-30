@@ -25,24 +25,24 @@ WITH ordered AS (
 flagged AS (
     SELECT
         *,
-        -- First row of the trip
+        -- Primera fila del viaje
         (prev_driver_id IS NULL) AS is_first_row,
 
-        -- Driver or car change
+        -- Cambio de conductor o de vehículo
         (
             driver_id IS DISTINCT FROM prev_driver_id
             OR car_id IS DISTINCT FROM prev_car_id
         ) AS is_change_event,
 
-        -- Detect if reason is provided (not null or empty string)
+        -- Detectar si reason viene informado (no nulo ni cadena vacía)
         (TRIM(COALESCE(reason, '')) <> '') AS has_reason,
 
-        -- Detect if price is provided (not null and not NaN)
+        -- Detectar si price viene informado (no nulo y distinto de NaN)
         (price IS NOT NULL AND price <> 'NaN') AS has_price
     FROM ordered
 ),
 
--- Detect, for each trip, the first row where reason is informed
+-- Detectar, para cada viaje, la primera fila con reason informado
 first_reason AS (
     SELECT
         trip_id,
@@ -52,7 +52,7 @@ first_reason AS (
     GROUP BY trip_id
 ),
 
--- From those rows with reason, get the first one with a valid price
+-- De esas filas con reason, coger la primera que tenga un precio válido
 first_reason_with_price AS (
     SELECT
         f.trip_id,
@@ -62,7 +62,7 @@ first_reason_with_price AS (
     GROUP BY f.trip_id
 ),
 
--- Join everything and prioritize the row with a price if it exists; otherwise use the first with reason
+-- Unir todo y priorizar la fila con precio si existe; si no, usar la primera con reason
 final_events AS (
     SELECT
         fr.trip_id,

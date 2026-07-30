@@ -7,8 +7,8 @@ from src.utils.dbt_transform import dbt_transform
 
 
 def init_schemas():
-    """Creates the required schemas if they do not exist."""
-    print("[INIT] Creating schemas (raw, staging, core, analytics)...")
+    """Crea los esquemas necesarios si no existen."""
+    print("[INIT] Creando esquemas (raw, staging, core, analytics)...")
     schemas = ["raw", "staging", "core", "analytics"]
     conn = get_connection()
     conn.autocommit = True
@@ -17,32 +17,32 @@ def init_schemas():
         cur.execute(f"CREATE SCHEMA IF NOT EXISTS {schema};")
     cur.close()
     conn.close()
-    print("[OK] Schemas ready.\n")
+    print("[OK] Esquemas listos.\n")
 
 
 def run_dbt_full():
-    """Runs dbt transformations in order (staging -> core -> analytics)."""
+    """Ejecuta las transformaciones de dbt en orden (staging -> core -> analytics)."""
     dbt_dir = os.path.join("dbt", "vtc_dbt")
-    print("\n[DBT] Running global dbt transformations...")
+    print("\n[DBT] Ejecutando las transformaciones globales de dbt...")
 
-    # 1) Run staging layer
+    # 1) Ejecutar la capa staging
     subprocess.run(["dbt", "run", "--select", "01_staging"], cwd=dbt_dir, check=True)
 
-    # 2) Run core layer
+    # 2) Ejecutar la capa core
     subprocess.run(["dbt", "run", "--select", "02_core"], cwd=dbt_dir, check=True)
     
-    # 3) Run tests (core only)
+    # 3) Ejecutar los tests (solo core)
     subprocess.run(["dbt", "test", "--select", "02_core"], cwd=dbt_dir, check=True)
 
-    # 4) Run analytics layer (if already exists)
+    # 4) Ejecutar la capa analytics (si ya existe)
     subprocess.run(["dbt", "run", "--select", "03_analytics"], cwd=dbt_dir, check=True)
     
-    print("[OK] dbt transformations completed.\n")
+    print("[OK] Transformaciones de dbt completadas.\n")
 
 
 def run_full_pipeline():
-    """Full pipeline: unzip + raw load + full dbt run."""
-    print("\n🚀 Starting VTC pipeline (RAW → STAGING → CORE → ANALYTICS)...\n")
+    """Pipeline completo: descompresión + carga raw + ejecución completa de dbt."""
+    print("\n🚀 Iniciando el pipeline VTC (RAW → STAGING → CORE → ANALYTICS)...\n")
 
     init_schemas()
     unzip_dataset()
@@ -53,7 +53,7 @@ def run_full_pipeline():
     extract_users.initial_load(extract_zip=False)
 
     run_dbt_full()
-    print("\n✅ Full pipeline completed.\n")
+    print("\n✅ Pipeline completo finalizado.\n")
 
 
 if __name__ == "__main__":
@@ -86,4 +86,4 @@ if __name__ == "__main__":
         dbt_transform("staging", "users")
         dbt_transform("core", "users")
     else:
-        print(f"[ERROR] Unrecognized PIPELINE_TARGET value: {target}")
+        print(f"[ERROR] Valor de PIPELINE_TARGET no reconocido: {target}")

@@ -3,21 +3,21 @@ import subprocess
 
 def dbt_transform(level="staging", entity=None):
     """
-    Executes dbt transformations for a specific level and entity.
-    Examples:
+    Ejecuta las transformaciones de dbt para un nivel y una entidad concretos.
+    Ejemplos:
       dbt_transform("staging", "drivers")
       dbt_transform("core", "users")
       dbt_transform("core", "trips")
     """
     if level not in ["staging", "core"]:
-        raise ValueError("The 'level' parameter must be either 'staging' or 'core'.")
+        raise ValueError("El parámetro 'level' debe ser 'staging' o 'core'.")
 
     if entity not in ["drivers", "users", "cars", "trips"]:
-        raise ValueError("The 'entity' parameter must be one of: 'drivers', 'users', 'cars', 'trips'.")
+        raise ValueError("El parámetro 'entity' debe ser uno de: 'drivers', 'users', 'cars', 'trips'.")
 
     dbt_dir = os.path.join("dbt", "vtc_dbt")
 
-    # Determine which model to execute according to naming convention
+    # Determinar qué modelo ejecutar según la convención de nombres
     if level == "staging":
         model = f"staging__{entity}"
     elif level == "core":
@@ -26,6 +26,6 @@ def dbt_transform(level="staging", entity=None):
         else:
             model = f"dim__{entity}"
 
-    print(f"[DBT] Running dbt transformations ({level}) for {entity}...\n")
+    print(f"[DBT] Ejecutando las transformaciones de dbt ({level}) para {entity}...\n")
     subprocess.run(["dbt", "run", "--select", model], cwd=dbt_dir, check=True)
-    print(f"[OK] {level.capitalize()} transformations completed for {entity}.\n")
+    print(f"[OK] Transformaciones de {level} completadas para {entity}.\n")
