@@ -1,6 +1,6 @@
 # 🚖 VTC Data Engineering Analytics Challenge
 
-## 🚀 ¡Al lío!
+## 🚀 Introducción
 
 Este repositorio contiene una solución completa (*end-to-end*) de **Data Engineering & Analytics** construida sobre un conjunto de datos de **VTC / ride-hailing** (conductores, usuarios, vehículos y viajes).
 
