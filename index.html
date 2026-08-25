@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VTC Analytics · Informe interactivo</title>
+
+<!--
+  Redirección a report/.
+
+  GitHub Pages, configurado como "Deploy from a branch → main / root", sirve la
+  raíz del repositorio. El informe vive en report/, así que sin este fichero la
+  URL raíz del sitio muestra el README renderizado en lugar del dashboard.
+
+  Bajo la otra configuración posible (Source: GitHub Actions, con el workflow
+  .github/workflows/pages.yml) la raíz del sitio ya es report/ y este fichero
+  simplemente no se usa.
+-->
+<link rel="canonical" href="report/">
+<meta http-equiv="refresh" content="0; url=report/">
+<meta name="robots" content="noindex">
+
+<style>
+  :root { color-scheme: light dark; }
+  body {
+    margin: 0; min-height: 100vh;
+    display: grid; place-items: center;
+    font: 15px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: #f4f2fb; color: #17132b;
+    text-align: center; padding: 24px;
+  }
+  @media (prefers-color-scheme: dark) {
+    body { background: #0d0b14; color: #f6f4ff; }
+  }
+  .mark {
+    width: 56px; height: 56px; border-radius: 18px; margin: 0 auto 18px;
+    background: linear-gradient(140deg, #8b6ef5, #5c45bb 60%, #3a2a7a);
+    display: grid; place-items: center; font-size: 28px;
+  }
+  h1 { font-size: 20px; margin: 0 0 6px; letter-spacing: -0.015em; }
+  p  { margin: 0; opacity: .7; font-size: 14px; }
+  a  { color: #6d55d6; font-weight: 600; }
+  @media (prefers-color-scheme: dark) { a { color: #9085e9; } }
+</style>
+</head>
+<body>
+  <div>
+    <div class="mark">🚖</div>
+    <h1>VTC Analytics</h1>
+    <p>Redirigiendo al informe interactivo…</p>
+    <p style="margin-top:10px"><a href="report/">Abrir el informe</a></p>
+  </div>
+  <script>location.replace('report/');</script>
+</body>
+</html>

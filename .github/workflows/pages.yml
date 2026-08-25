@@ -9,9 +9,6 @@ name: Publicar el informe en GitHub Pages
 on:
   push:
     branches: [main]
-    paths:
-      - 'report/**'
-      - '.github/workflows/pages.yml'
   workflow_dispatch:
 
 permissions:
