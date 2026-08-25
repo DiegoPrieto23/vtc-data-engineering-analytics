@@ -6,9 +6,37 @@
 }}
 
 -- ============================================================
+-- CTE 0: Divisa y tipo de cambio por país
+--
+--   minor_units → divisor para pasar del importe almacenado a la unidad
+--     principal de la divisa. Los importes llegan en la unidad *menor*
+--     (céntimos / centavos) en todos los mercados salvo COP y CLP, que se
+--     registran en pesos enteros porque su unidad menor no se usa en la
+--     práctica. Aplicar /100 a todos los mercados por igual dividía los
+--     ingresos de Colombia y Chile por 100.
+--   rate_to_eur → euros por 1 unidad principal de la divisa (media de 2021,
+--     el periodo que cubre el dataset).
+--
+--   Comprobación: la mediana del ticket queda entre 2 y 10 € en los siete
+--   mercados, que es el rango esperable de un trayecto urbano.
+-- ============================================================
+WITH fx_rates AS (
+    SELECT *
+    FROM (VALUES
+        ('ES', 'EUR', 100, 1.0::numeric),
+        ('CO', 'COP',   1, 0.000226),
+        ('PE', 'PEN', 100, 0.2225),
+        ('CL', 'CLP',   1, 0.00105),
+        ('EC', 'USD', 100, 0.845),
+        ('AR', 'ARS', 100, 0.00875),
+        ('MX', 'MXN', 100, 0.0417)
+    ) AS f(country, currency, minor_units, rate_to_eur)
+),
+
+-- ============================================================
 -- CTE 1: Agregar los eventos del viaje para calcular las métricas de duración
 -- ============================================================
-WITH trip_events AS (
+trip_events AS (
     SELECT
         trip_id,
         ARRAY_AGG(updated_at ORDER BY updated_at ASC) AS updated_list,
@@ -146,35 +174,20 @@ SELECT
     -- Precio (solo cuando reason viene informado)
     CASE WHEN TRIM(COALESCE(t.reason, '')) <> '' THEN t.price ELSE NULL END AS price,
 
-    -- Tipo de cambio por país
-    CASE
-        WHEN t.locale_country = 'AR' THEN 0.001
-        WHEN t.locale_country = 'CO' THEN 0.00023
-        WHEN t.locale_country = 'MX' THEN 0.051
-        WHEN t.locale_country = 'CL' THEN 0.001
-        WHEN t.locale_country = 'PE' THEN 0.25
-        WHEN t.locale_country = 'EC' THEN 0.93
-        WHEN t.locale_country = 'ES' THEN 1.0
-        ELSE 1.0
-    END AS exchange_rate,
+    -- Divisa local y tipo de cambio aplicado
+    COALESCE(fx.currency, 'EUR')    AS currency,
+    COALESCE(fx.minor_units, 100)   AS price_minor_units,
+    COALESCE(fx.rate_to_eur, 1.0)   AS exchange_rate,
 
-    -- Precio convertido a EUR
+    -- Precio convertido a EUR: importe → unidad principal → euros
     CASE
-        WHEN TRIM(COALESCE(t.reason, '')) <> '' THEN
-            ROUND(
-                (t.price *
-                    CASE
-                        WHEN t.locale_country = 'AR' THEN 0.001
-                        WHEN t.locale_country = 'CO' THEN 0.00023
-                        WHEN t.locale_country = 'MX' THEN 0.051
-                        WHEN t.locale_country = 'CL' THEN 0.001
-                        WHEN t.locale_country = 'PE' THEN 0.25
-                        WHEN t.locale_country = 'EC' THEN 0.93
-                        WHEN t.locale_country = 'ES' THEN 1.0
-                        ELSE 1.0
-                    END
-                ) / 100, 2
-            )
+        WHEN TRIM(COALESCE(t.reason, '')) <> ''
+             AND t.price IS NOT NULL
+             AND t.price <> 'NaN'
+        THEN ROUND(
+                 t.price / COALESCE(fx.minor_units, 100) * COALESCE(fx.rate_to_eur, 1.0),
+                 2
+             )
         ELSE NULL
     END AS price_eur,
 
@@ -184,6 +197,8 @@ SELECT
 
 FROM trips_localized t
 LEFT JOIN waiting_calc w USING (trip_id)
+LEFT JOIN fx_rates fx
+    ON fx.country = t.locale_country
 LEFT JOIN {{ ref('dim__drivers') }} dvr
     ON t.driver_id = dvr.driver_id
    AND t.start_at_local >= dvr.valid_from

@@ -1,0 +1,53 @@
+name: Publicar el informe en GitHub Pages
+
+# Despliega la carpeta `report/` (informe interactivo + extracto JSON) como sitio
+# estático. El extracto se genera con `scripts/export_report_data.py` y se sube al
+# repositorio, así que este workflow no necesita base de datos: solo publica.
+#
+# Para activarlo: Settings → Pages → Source: GitHub Actions.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'report/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Un despliegue a la vez; no cancelamos el que esté en curso.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Comprobar que el extracto de datos existe
+        run: |
+          test -f report/data/trips.json || {
+            echo "::error::Falta report/data/trips.json."
+            echo "Genéralo con: docker compose run --rm --no-deps app python scripts/export_report_data.py"
+            exit 1
+          }
+          test -f report/data/meta.json || { echo "::error::Falta report/data/meta.json."; exit 1; }
+          echo "Extracto encontrado ($(du -h report/data/trips.json | cut -f1))."
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: report
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

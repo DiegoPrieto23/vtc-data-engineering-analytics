@@ -204,7 +204,7 @@ El esquema **core** está estructurado siguiendo un patrón de **esquema en estr
 ### Tablas de hechos
 Contienen eventos medibles, como los viajes.
 
-- `fact_trips`: trip_id, created_at, updated_at, start_at, week_day, start_day, start_date, start_month, start_year, start_hour, driver_id, car_id, user_id, reason, start_lat, start_lon, end_lat, end_lon, trip_duration_minutes, effective_trip_duration_minutes, waiting_time_minutes, price, exchange_rate,
+- `fact_trips`: trip_id, created_at, updated_at, start_at, week_day, start_day, start_date, start_month, start_year, start_hour, driver_id, car_id, user_id, reason, start_lat, start_lon, end_lat, end_lon, trip_duration_minutes, effective_trip_duration_minutes, waiting_time_minutes, price, currency, price_minor_units, exchange_rate,
 price_eur, user_country, driver_state, car_type
 
 ### Tablas de dimensiones
@@ -306,6 +306,21 @@ En el modelo `fact_trips`:
 - Convertimos todos los importes a una divisa de referencia única (EUR) según una tabla de tipos de cambio.
 - Esto facilita comparar viajes entre mercados distintos.
 
+> ⚠️ **La unidad importa tanto como el tipo de cambio.**
+> El importe no llega en la misma unidad en todos los mercados. España, Perú, Ecuador, Argentina y
+> México lo registran en la **unidad menor** de su divisa (céntimos, centavos), pero **Colombia y Chile
+> lo registran en pesos enteros**, porque su unidad menor no se usa en la práctica.
+>
+> Por eso el CTE `fx_rates` de `fact__trips` lleva **dos** columnas por país —`minor_units` (divisor) y
+> `rate_to_eur` (tipo de cambio)— en lugar de una sola constante. Con un `/100` uniforme, los ingresos
+> de Colombia y Chile quedaban divididos por cien: tickets medios de 0,03 € y 0,05 €, cifras imposibles
+> que el modelo daba por buenas.
+>
+> **Comprobación de sanidad:** tras la corrección, la mediana del ticket queda entre 2 € y 10 € en los
+> siete mercados, que es el rango esperable de un trayecto urbano. El notebook
+> [01_exploratory_data_analysis.ipynb](notebooks/01_exploratory_data_analysis.ipynb) contrasta ambas
+> hipótesis explícitamente.
+
 #### 3. Calculamos el tiempo efectivo de viaje y el tiempo de espera
 A partir del histórico de eventos de cada viaje calculamos:
 - Duración total del viaje (minutos):
@@ -325,11 +340,11 @@ Durante el proceso de limpieza y transformación se han generado varias columnas
 
 #### En `fact_trips`:
 - **week_day** – Día de la semana como entero (lunes = 1, domingo = 7)
-- **start_day** – Día del mes (1–31)
+- **start_day** – Fecha de calendario del viaje (AAAA-MM-DD)
 - **start_month** – Número de mes (1–12)
 - **start_year** – Año extraído de la marca de tiempo de inicio del viaje
 - **start_hour** – Hora del día (0–23)
-- **start_date** – Fecha de calendario (AAAA-MM-DD)
+- **start_date** – Día del mes (1–31)
 - **price_eur** – Precio convertido a EUR con el tipo de cambio aplicable
 - **exchange_rate** – Tipo de cambio aplicado para normalizar las divisas de los viajes
 - **trip_duration_minutes**, **effective_trip_duration_minutes**, **waiting_time_minutes** – Duraciones derivadas de las diferencias entre marcas de tiempo
@@ -360,6 +375,75 @@ También puedes ver algunas de las salidas generadas en [notebooks/02_analytics_
 <p align="center">
   <img src="notebooks/images/hotspots.png" alt="Hotspots" width="600"/>
 </p>
+
+---
+
+## 📈 Informe interactivo (dashboard HTML)
+
+Además de los notebooks, el proyecto incluye un **informe interactivo autocontenido** en `report/`,
+pensado como herramienta de exploración al estilo de un dashboard de BI.
+
+<p align="center">
+  <img src="notebooks/images/top_routes.png" alt="Informe interactivo VTC" width="600"/>
+</p>
+
+**Qué incluye**
+
+| Página | Contenido |
+|--------|-----------|
+| Resumen ejecutivo | KPIs principales, evolución diaria, reparto por mercado y ciudad |
+| Ingresos y precio | Precio en divisa local vs. normalizado a EUR, ticket, €/min, €/km |
+| Demanda y horarios | Heatmap hora local × día de la semana, perfiles horarios, espera vs. trayecto |
+| Mapa y rutas | Mapa Leaflet con corredores más demandados, focos de recogida y de dejada, heatmap |
+| Conductores y flota | Reasignaciones por viaje, curva de Lorenz, categorías de vehículo |
+| Conversión del viaje | Motivos de cierre, tasa de finalización por mercado y hora, efecto de la espera |
+| Usuarios y fidelidad | Frecuencia, concentración del gasto, mercados y antigüedad |
+| Calidad del dato | Embudo 23.919 filas → 1.863 viajes, integridad referencial, completitud |
+| Modelo y metodología | Las decisiones de modelado y sus consecuencias, con limitaciones declaradas |
+
+**Características**
+
+- **Filtros globales** (país, ciudad, desenlace, tipo de vehículo, rango de fechas) que se propagan a
+  todas las páginas, como el *cross-filtering* de Power BI.
+- **Narrativa**: cada bloque explica qué se está mirando y qué conclusión admite (y cuál no).
+- Tema claro y oscuro, responsive, y sin dependencias externas más allá de los *tiles* del mapa.
+- **No consulta la base de datos en vivo**: lee un extracto JSON, de modo que se puede publicar como
+  sitio estático.
+
+### Generarlo y verlo en local
+
+```bash
+# 1 · Levantar la base de datos y ejecutar el pipeline (si no lo has hecho ya)
+docker compose up --build
+
+# 2 · Exportar el extracto que alimenta el informe
+docker compose run --rm --no-deps app python scripts/export_report_data.py
+#    ...o desde el host, si tu 5432 apunta al contenedor:
+#    python scripts/export_report_data.py
+
+# 3 · Servir la carpeta report/
+python -m http.server 8080 --directory report
+#    → http://localhost:8080
+```
+
+> ⚠️ Hay que servirlo por HTTP. Abrir `report/index.html` con `file://` no funciona: el navegador
+> bloquea el `fetch` de los JSON.
+
+> 💡 Si al ejecutar el script desde el host falla la autenticación, comprueba que no tengas otro
+> PostgreSQL escuchando en el puerto 5432. Puedes redirigirlo con `PG_HOST_LOCAL` / `PG_PORT_LOCAL`
+> sin tocar el `.env`, o simplemente lanzarlo dentro del contenedor como en el paso 2.
+
+### Publicarlo en GitHub Pages
+
+El contenido de `report/` (incluidos los JSON de `report/data/`) es un sitio estático, así que basta
+con servir esa carpeta. El repositorio incluye el workflow
+[`.github/workflows/pages.yml`](.github/workflows/pages.yml), que la despliega en cada push a `main`.
+
+Para activarlo: **Settings → Pages → Source: GitHub Actions**. El informe quedará publicado en
+`https://<usuario>.github.io/<repositorio>/`.
+
+Si prefieres no usar Actions, otra opción es renombrar `report/` a `docs/` y elegir
+**Settings → Pages → Source: Deploy from a branch → main / docs**.
 
 ---
 

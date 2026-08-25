@@ -1,0 +1,828 @@
+<!doctype html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VTC Analytics · Informe interactivo</title>
+<meta name="description" content="Informe interactivo de negocio sobre el dataset VTC / ride-hailing: KPIs, demanda, rutas, conductores y calidad del dato.">
+<link rel="stylesheet" href="assets/vendor/leaflet.css">
+<link rel="stylesheet" href="assets/styles.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚖</text></svg>">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ================= SIDEBAR ================= -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">🚖</div>
+      <div>
+        <div class="brand-name">VTC Analytics</div>
+        <div class="brand-sub">Sep–Oct 2021</div>
+      </div>
+    </div>
+
+    <nav class="nav" id="nav">
+      <div class="nav-group">Negocio</div>
+      <button class="nav-item" data-page="overview"><span class="nav-ico">◎</span>Resumen ejecutivo</button>
+      <button class="nav-item" data-page="revenue"><span class="nav-ico">€</span>Ingresos y precio</button>
+      <button class="nav-item" data-page="demand"><span class="nav-ico">◷</span>Demanda y horarios</button>
+
+      <div class="nav-group">Operación</div>
+      <button class="nav-item" data-page="geo"><span class="nav-ico">◈</span>Mapa y rutas</button>
+      <button class="nav-item" data-page="ops"><span class="nav-ico">⚙</span>Conductores y flota</button>
+      <button class="nav-item" data-page="funnel"><span class="nav-ico">▽</span>Conversión del viaje</button>
+
+      <div class="nav-group">Clientes</div>
+      <button class="nav-item" data-page="users"><span class="nav-ico">☺</span>Usuarios y fidelidad</button>
+
+      <div class="nav-group">Datos</div>
+      <button class="nav-item" data-page="quality"><span class="nav-ico">✓</span>Calidad del dato</button>
+      <button class="nav-item" data-page="method"><span class="nav-ico">⌥</span>Modelo y metodología</button>
+    </nav>
+
+    <div class="sidebar-foot">
+      <div id="foot-meta">Cargando…</div>
+      <div>raw → staging → core → analytics</div>
+    </div>
+  </aside>
+
+  <!-- ================= MAIN ================= -->
+  <main class="main">
+
+    <!-- Barra de filtros globales -->
+    <div class="topbar">
+      <div class="topbar-title"><b id="tb-title">Resumen ejecutivo</b> · <span id="tb-count">—</span></div>
+      <div class="filters" id="filters">
+        <div class="slicer" data-dim="c">
+          <button class="slicer-btn" type="button">País <span class="caret">▼</span></button>
+          <div class="slicer-menu"></div>
+        </div>
+        <div class="slicer" data-dim="city">
+          <button class="slicer-btn" type="button">Ciudad <span class="caret">▼</span></button>
+          <div class="slicer-menu"></div>
+        </div>
+        <div class="slicer" data-dim="r">
+          <button class="slicer-btn" type="button">Desenlace <span class="caret">▼</span></button>
+          <div class="slicer-menu"></div>
+        </div>
+        <div class="slicer" data-dim="ct">
+          <button class="slicer-btn" type="button">Vehículo <span class="caret">▼</span></button>
+          <div class="slicer-menu"></div>
+        </div>
+        <div class="slicer" data-dim="dt">
+          <button class="slicer-btn" type="button">Fechas <span class="caret">▼</span></button>
+          <div class="slicer-menu"></div>
+        </div>
+        <button class="btn-ghost" id="reset-filters" type="button">Limpiar</button>
+      </div>
+      <button class="icon-btn" id="theme-toggle" type="button" title="Cambiar tema" aria-label="Cambiar tema">◐</button>
+    </div>
+
+    <div class="filter-banner" id="filter-banner"></div>
+
+    <!-- ============================================================ -->
+    <!-- PÁGINA 1 · RESUMEN EJECUTIVO                                  -->
+    <!-- ============================================================ -->
+    <section class="page" id="page-overview">
+      <div class="page-head">
+        <div class="page-eyebrow">Negocio · Visión general</div>
+        <h1 id="ov-title">Cinco semanas de operación en siete países</h1>
+        <p id="ov-lede" class="lede"></p>
+      </div>
+
+      <div class="grid g5" id="ov-kpis"></div>
+
+      <div class="section">
+        <div class="section-head">
+          <h2>¿Cómo evolucionó el negocio día a día?</h2>
+          <p>Volumen de viajes completados e ingresos diarios en euros. Los dos ejes se separan
+             deliberadamente en dos gráficos para no comparar escalas distintas sobre el mismo eje.</p>
+        </div>
+        <div class="grid g2">
+          <div class="card">
+            <div class="card-head"><div class="card-title">Viajes por día</div><div class="card-tag">Volumen</div></div>
+            <div class="card-sub">Recuento de viajes con desenlace registrado</div>
+            <div class="chart h260" id="ov-trips-day"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Ingresos por día</div><div class="card-tag">EUR</div></div>
+            <div class="card-sub">Suma de <code class="i">price_eur</code> de los viajes facturados</div>
+            <div class="chart h260" id="ov-rev-day"></div>
+          </div>
+        </div>
+        <div class="insight" id="ov-insight-time"><span class="ico">📈</span><div></div></div>
+      </div>
+
+      <div class="section">
+        <div class="section-head">
+          <h2>¿De dónde sale el negocio?</h2>
+          <p>El reparto por mercado revela una asimetría fuerte entre el volumen de viajes y los
+             ingresos que aporta cada país, una vez normalizadas las divisas a euros.</p>
+        </div>
+        <div class="grid g23">
+          <div class="card">
+            <div class="card-head"><div class="card-title">Viajes e ingresos por país</div></div>
+            <div class="card-sub">Ambas medidas indexadas a su propio total para poder compararlas</div>
+            <div class="chart h300" id="ov-country"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Top ciudades</div></div>
+            <div class="card-sub">Área metropolitana asignada por proximidad al punto de recogida</div>
+            <div class="table-wrap"><table class="dt" id="ov-cities"></table></div>
+          </div>
+        </div>
+        <div class="insight" id="ov-insight-geo"><span class="ico">🌍</span><div></div></div>
+      </div>
+
+      <div class="section">
+        <div class="section-head">
+          <h2>La salud operativa en una tabla</h2>
+          <p>Cada mercado en una fila, con las métricas que un comité de dirección miraría primero.</p>
+        </div>
+        <div class="card">
+          <div class="table-wrap"><table class="dt" id="ov-table"></table></div>
+        </div>
+      </div>
+
+      <div class="footer"><span>Fuente: <code class="i">core.fact__trips</code> · PostgreSQL</span><span id="foot-1"></span></div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- PÁGINA 2 · INGRESOS Y PRECIO                                  -->
+    <!-- ============================================================ -->
+    <section class="page" id="page-revenue">
+      <div class="page-head">
+        <div class="page-eyebrow">Negocio · Monetización</div>
+        <h1>El precio no se puede leer sin normalizar la divisa</h1>
+        <p class="lede">Los importes llegan en la moneda local de cada mercado. Un viaje que marca
+          <b>540</b> en España y otro que marca <b>11.500</b> en Colombia no son comparables, y tampoco
+          basta con dividir todo entre cien: el importe español está en céntimos, pero el colombiano
+          está en pesos enteros. Hay que saber la unidad de cada divisa <em>antes</em> de aplicar el tipo
+          de cambio. Esta página trabaja siempre en euros ya normalizados.</p>
+      </div>
+
+      <div class="grid g4" id="rv-kpis"></div>
+
+      <div class="section">
+        <div class="section-head">
+          <h2>Antes y después de normalizar</h2>
+          <p>A la izquierda, el precio tal y como llega en la fuente: siete escalas incomparables.
+             A la derecha, el mismo dato convertido a euros con el tipo de cambio por país.</p>
+        </div>
+        <div class="grid g2">
+          <div class="card">
+            <div class="card-head"><div class="card-title">Precio en divisa local</div><div class="card-tag">Crudo</div></div>
+            <div class="card-sub">Escala logarítmica: sin ella los mercados no caben en el mismo gráfico</div>
+            <div class="chart h300" id="rv-box-local"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Precio en euros</div><div class="card-tag">Normalizado</div></div>
+            <div class="card-sub">Distribución del ticket por mercado, escala lineal</div>
+            <div class="chart h300" id="rv-box-eur"></div>
+          </div>
+        </div>
+        <div class="insight" id="rv-insight-fx"><span class="ico">💱</span><div></div></div>
+      </div>
+
+      <div class="section">
+        <div class="section-head">
+          <h2>¿Dónde está el valor: en el volumen o en el ticket?</h2>
+          <p>Ingreso total frente a ticket medio. Un mercado puede pesar mucho en viajes y poco en caja.</p>
+        </div>
+        <div class="grid g2">
+          <div class="card">
+            <div class="card-head"><div class="card-title">Ingreso total por mercado</div></div>
+            <div class="card-sub">Suma de precios convertidos a EUR</div>
+            <div class="chart h280" id="rv-revenue-country"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Ticket medio y mediano</div></div>
+            <div class="card-sub">La mediana resiste mejor los viajes atípicos que la media</div>
+            <div class="chart h280" id="rv-ticket-country"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-head">
+          <h2>¿Qué explica el precio de un viaje?</h2>
+          <p>Relación entre la duración efectiva del trayecto, la distancia en línea recta y el importe cobrado.</p>
+        </div>
+        <div class="grid g2">
+          <div class="card">
+            <div class="card-head"><div class="card-title">Precio vs. duración efectiva</div></div>
+            <div class="card-sub">Cada punto es un viaje facturado · color por mercado (máx. 3 series a la vez)</div>
+            <div class="chart h340" id="rv-scatter"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Ingreso por minuto de trayecto</div></div>
+            <div class="card-sub">Ingresos totales ÷ minutos efectivos acumulados</div>
+            <div class="chart h340" id="rv-rpm"></div>
+          </div>
+        </div>
+        <div class="insight" id="rv-insight-price"><span class="ico">🧮</span><div></div></div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><h2>Distribución del ticket</h2>
+          <p>Histograma del importe en euros, con los tramos de precio que concentran la demanda.</p></div>
+        <div class="grid g23">
+          <div class="card">
+            <div class="card-head"><div class="card-title">Histograma de precio (EUR)</div></div>
+            <div class="card-sub">Recorte al percentil 99 para que la cola no aplaste el gráfico</div>
+            <div class="chart h300" id="rv-hist"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Estadísticos por mercado</div></div>
+            <div class="card-sub">Vista de tabla (accesibilidad y verificación)</div>
+            <div class="table-wrap"><table class="dt" id="rv-table"></table></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer"><span>Tipos de cambio fijos por país, documentados en la página de metodología.</span></div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- PÁGINA 3 · DEMANDA Y HORARIOS                                 -->
+    <!-- ============================================================ -->
+    <section class="page" id="page-demand">
+      <div class="page-head">
+        <div class="page-eyebrow">Negocio · Demanda</div>
+        <h1>La demanda tiene forma de ciudad, no de reloj UTC</h1>
+        <p class="lede">Todas las marcas de tiempo llegan en UTC. Sin corregir el huso horario de cada
+          mercado, la curva horaria mezcla la madrugada de Bogotá con la tarde de Madrid y no describe
+          a nadie. Aquí todo está ya en hora local del usuario.</p>
+      </div>
+
+      <div class="grid g4" id="dm-kpis"></div>
+
+      <div class="section">
+        <div class="section-head">
+          <h2>El pulso de la semana</h2>
+          <p>Intensidad de la demanda por hora local y día de la semana. Cuanto más intenso el violeta,
+             más viajes en esa franja.</p>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">Viajes por hora local × día de la semana</div><div class="card-tag">Heatmap</div></div>
+          <div class="card-sub" id="dm-hm-sub"></div>
+          <div id="dm-heatmap"></div>
+          <div class="map-legend">
+            <span>Menos viajes</span>
+            <span class="ramp" id="dm-ramp"></span>
+            <span>Más viajes</span>
+          </div>
+        </div>
+        <div class="insight" id="dm-insight-hm"><span class="ico">🕒</span><div></div></div>
+      </div>
+
+      <div class="section">
+        <div class="grid g2">
+          <div class="card">
+            <div class="card-head"><div class="card-title">Perfil horario</div></div>
+            <div class="card-sub">Viajes por hora local de inicio</div>
+            <div class="chart h280" id="dm-hour"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Perfil semanal</div></div>
+            <div class="card-sub">Viajes por día de la semana</div>
+            <div class="chart h280" id="dm-weekday"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-head">
+          <h2>¿Y qué pasa con los tiempos?</h2>
+          <p>Un viaje son dos tramos muy distintos: el tiempo que el usuario espera a que llegue el
+             coche y el tiempo que pasa dentro. Separarlos es lo que permite actuar sobre ellos.</p>
+        </div>
+        <div class="grid g2">
+          <div class="card">
+            <div class="card-head"><div class="card-title">Espera vs. trayecto por hora local</div></div>
+            <div class="card-sub">Minutos medios · las dos series comparten unidad, así que comparten eje</div>
+            <div class="chart h300" id="dm-times"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Duración efectiva del trayecto</div></div>
+            <div class="card-sub">Reparto de los viajes por tramos de duración</div>
+            <div class="chart h300" id="dm-duration"></div>
+          </div>
+        </div>
+        <div class="insight" id="dm-insight-times"><span class="ico">⏱️</span><div></div></div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><h2>Comparativa entre mercados</h2>
+          <p>El mismo perfil horario, normalizado dentro de cada país para poder compararlos pese a
+             sus volúmenes tan dispares.</p></div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">Perfil horario normalizado por país</div></div>
+          <div class="card-sub">Cada fila suma 100 %: el color indica el peso de esa hora dentro del mercado</div>
+          <div id="dm-country-hours"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- PÁGINA 4 · MAPA Y RUTAS                                       -->
+    <!-- ============================================================ -->
+    <section class="page" id="page-geo">
+      <div class="page-head">
+        <div class="page-eyebrow">Operación · Geografía</div>
+        <h1>Dónde se pide el coche y a dónde va</h1>
+        <p class="lede">Cada viaje conserva dos pares de coordenadas: recogida y destino. Ese par es
+          suficiente para reconstruir los corredores de demanda de cada ciudad, los focos de recogida
+          y los de dejada, que rara vez coinciden.</p>
+      </div>
+
+      <div class="card">
+        <div class="map-toolbar">
+          <select class="inp" id="geo-scope"></select>
+          <div class="seg" id="geo-layers">
+            <button type="button" data-layer="routes" aria-pressed="true">Rutas</button>
+            <button type="button" data-layer="pickup" aria-pressed="true">Recogidas</button>
+            <button type="button" data-layer="dropoff" aria-pressed="true">Dejadas</button>
+            <button type="button" data-layer="heat" aria-pressed="false">Mapa de calor</button>
+          </div>
+          <label class="btn-ghost" style="display:flex;align-items:center;gap:7px;cursor:pointer">
+            Top rutas
+            <input type="range" id="geo-topn" min="5" max="60" value="25" step="5" style="width:110px">
+            <b id="geo-topn-val" style="font-variant-numeric:tabular-nums">25</b>
+          </label>
+        </div>
+        <div class="map h520" id="geo-map"></div>
+        <div class="map-legend">
+          <span><i class="dot" style="background:var(--series-3)"></i>Punto de recogida <em style="color:var(--text-muted);font-style:normal">(disco)</em></span>
+          <span><i class="dot" style="background:transparent;border-color:var(--series-2);border-width:2.5px"></i>Punto de dejada <em style="color:var(--text-muted);font-style:normal">(anillo)</em></span>
+          <span><i class="dot" style="background:var(--series-1)"></i>Corredor (grosor y color = nº de viajes)</span>
+          <span style="margin-left:auto" id="geo-caption"></span>
+        </div>
+      </div>
+
+      <div class="insight" id="geo-insight"><span class="ico">🗺️</span><div></div></div>
+
+      <div class="section">
+        <div class="grid g2">
+          <div class="card">
+            <div class="card-head"><div class="card-title">Corredores más demandados</div></div>
+            <div class="card-sub">Pares origen–destino redondeados a ~1 km · pulsa una fila para centrar el mapa</div>
+            <div class="table-wrap"><table class="dt" id="geo-routes"></table></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Focos de recogida y de dejada</div></div>
+            <div class="card-sub">Celdas de ~100 m con más actividad</div>
+            <div class="table-wrap"><table class="dt" id="geo-hotspots"></table></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><h2>Distancia recorrida</h2>
+          <p>Distancia en línea recta entre recogida y destino. No es la distancia real por carretera,
+             pero sirve para dimensionar el tipo de trayecto de cada mercado.</p></div>
+        <div class="grid g2">
+          <div class="card">
+            <div class="card-head"><div class="card-title">Distribución de distancias</div></div>
+            <div class="card-sub">Kilómetros en línea recta, recorte al percentil 99</div>
+            <div class="chart h280" id="geo-dist"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Distancia media y velocidad implícita</div></div>
+            <div class="card-sub">km/h estimados sobre la duración efectiva del trayecto</div>
+            <div class="table-wrap"><table class="dt" id="geo-speed"></table></div>
+          </div>
+        </div>
+        <div class="insight" id="geo-insight-speed"><span class="ico">🧭</span><div></div></div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- PÁGINA 5 · CONDUCTORES Y FLOTA                                -->
+    <!-- ============================================================ -->
+    <section class="page" id="page-ops">
+      <div class="page-head">
+        <div class="page-eyebrow">Operación · Oferta</div>
+        <h1>Quién conduce, con qué coche y cuántas veces cambia de manos un viaje</h1>
+        <p class="lede">El histórico de eventos guarda algo que una tabla de viajes plana perdería:
+          cuántas veces se reasignó el conductor antes de que alguien aceptara. Es una métrica directa
+          de fricción en el emparejamiento.</p>
+      </div>
+
+      <div class="grid g4" id="op-kpis"></div>
+
+      <div class="section">
+        <div class="section-head">
+          <h2>La fricción del emparejamiento</h2>
+          <p>Reasignaciones de conductor por viaje. Un viaje con muchas reasignaciones es un viaje que
+             ningún conductor quiso, o que se ofreció a varios antes de cuajar.</p>
+        </div>
+        <div class="grid g2">
+          <div class="card">
+            <div class="card-head"><div class="card-title">Conductores distintos por viaje</div></div>
+            <div class="card-sub">«Ninguno» = el viaje nunca salió del placeholder del sistema, es decir, jamás se asignó conductor</div>
+            <div class="chart h280" id="op-changes"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">¿Más reasignaciones, peor desenlace?</div></div>
+            <div class="card-sub">Solo viajes que llegaron a tener conductor · tasa de <code class="i">drop_off</code></div>
+            <div class="chart h280" id="op-changes-outcome"></div>
+          </div>
+        </div>
+        <div class="insight" id="op-insight-changes"><span class="ico">🔄</span><div></div></div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><h2>Rendimiento de los conductores</h2>
+          <p>Con cinco semanas de datos y un catálogo de más de mil conductores, la cola es larga y la
+             cabeza es corta: nadie acumula un volumen que permita rankings estables.</p></div>
+        <div class="grid g23">
+          <div class="card">
+            <div class="card-head"><div class="card-title">Concentración de la actividad</div></div>
+            <div class="card-sub">Curva de Lorenz: % de viajes acumulado sobre % de conductores</div>
+            <div class="chart h300" id="op-lorenz"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Top conductores por ingreso</div></div>
+            <div class="card-sub">Identificadores anonimizados en origen</div>
+            <div class="table-wrap"><table class="dt" id="op-drivers"></table></div>
+          </div>
+        </div>
+        <div class="insight" id="op-insight-lorenz"><span class="ico">📊</span><div></div></div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><h2>La flota</h2>
+          <p>El catálogo de vehículos es enorme comparado con los que realmente aparecen en un viaje,
+             y solo una fracción diminuta cruza contra la dimensión. Ver la página de calidad del dato.</p></div>
+        <div class="grid g2">
+          <div class="card">
+            <div class="card-head"><div class="card-title">Viajes y ticket por categoría de vehículo</div></div>
+            <div class="card-sub">Categoría tomada de <code class="i">dim__cars.icon</code></div>
+            <div class="chart h260" id="op-cartype"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Composición del catálogo de vehículos</div></div>
+            <div class="card-sub">Vehículos únicos en la dimensión, por categoría y estado</div>
+            <div class="table-wrap"><table class="dt" id="op-fleet"></table></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- PÁGINA 6 · CONVERSIÓN DEL VIAJE                                -->
+    <!-- ============================================================ -->
+    <section class="page" id="page-funnel">
+      <div class="page-head">
+        <div class="page-eyebrow">Operación · Conversión</div>
+        <h1>De la solicitud a la factura</h1>
+        <p class="lede">Cada viaje termina con un motivo de cierre en el campo <code class="i">reason</code>.
+          Ese campo es lo más parecido a un embudo que ofrece el dataset: dice si el viaje acabó en el
+          destino, si el usuario canceló, si nadie apareció o si lo tumbó el sistema.</p>
+      </div>
+
+      <div class="grid g4" id="fn-kpis"></div>
+
+      <div class="section">
+        <div class="section-head"><h2>El desenlace de cada viaje</h2>
+          <p>Reparto de los motivos de cierre y lo que cada uno cuesta en ingresos no realizados.</p></div>
+        <div class="grid g23">
+          <div class="card">
+            <div class="card-head"><div class="card-title">Motivos de cierre</div></div>
+            <div class="card-sub">Un viaje = un desenlace</div>
+            <div class="chart h300" id="fn-reasons"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Detalle por desenlace</div></div>
+            <div class="card-sub">Ticket medio y tiempos asociados</div>
+            <div class="table-wrap"><table class="dt" id="fn-table"></table></div>
+          </div>
+        </div>
+        <div class="insight" id="fn-insight"><span class="ico">🎯</span><div></div></div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><h2>¿Dónde y cuándo se pierden los viajes?</h2>
+          <p>La tasa de cancelación no es uniforme: cambia por mercado y por franja horaria.</p></div>
+        <div class="grid g2">
+          <div class="card">
+            <div class="card-head"><div class="card-title">Tasa de finalización por mercado</div></div>
+            <div class="card-sub">% de viajes que acaban en <code class="i">drop_off</code></div>
+            <div class="chart h300" id="fn-country"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Cancelaciones por hora local</div></div>
+            <div class="card-sub">Reparto del desenlace dentro de cada franja horaria</div>
+            <div class="chart h300" id="fn-hour"></div>
+          </div>
+        </div>
+        <div class="insight" id="fn-insight-when"><span class="ico">📉</span><div></div></div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><h2>El coste de esperar</h2>
+          <p>Relación entre el tiempo de espera acumulado y la probabilidad de que el viaje se caiga.</p></div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">Desenlace según el tiempo de espera</div></div>
+          <div class="card-sub">Tramos de espera en minutos · % de viajes por desenlace dentro de cada tramo</div>
+          <div class="chart h300" id="fn-wait"></div>
+        </div>
+        <div class="insight" id="fn-insight-wait"><span class="ico">⌛</span><div></div></div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- PÁGINA 7 · USUARIOS                                            -->
+    <!-- ============================================================ -->
+    <section class="page" id="page-users">
+      <div class="page-head">
+        <div class="page-eyebrow">Clientes</div>
+        <h1>Noventa y nueve usuarios, casi dos mil viajes</h1>
+        <p class="lede">El panel de usuarios es pequeño y cerrado: 99 identificadores, todos ellos
+          presentes en la tabla de viajes. Eso convierte este dataset en una muestra de comportamiento
+          muy densa por usuario, más que en una foto de mercado.</p>
+      </div>
+
+      <div class="grid g4" id="us-kpis"></div>
+
+      <div class="section">
+        <div class="section-head"><h2>¿Cómo se reparte el uso?</h2>
+          <p>Frecuencia y gasto por usuario. Con una muestra tan reducida, la mediana dice más que la media.</p></div>
+        <div class="grid g2">
+          <div class="card">
+            <div class="card-head"><div class="card-title">Viajes por usuario</div></div>
+            <div class="card-sub">Distribución de la frecuencia de uso en el periodo</div>
+            <div class="chart h280" id="us-freq"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Concentración del gasto</div></div>
+            <div class="card-sub">% de ingresos acumulado sobre % de usuarios ordenados por gasto</div>
+            <div class="chart h280" id="us-lorenz"></div>
+          </div>
+        </div>
+        <div class="insight" id="us-insight"><span class="ico">👥</span><div></div></div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><h2>Mercado y ficha de usuario</h2>
+          <p>El campo <code class="i">locale</code> combina idioma y país (<code class="i">es-ES</code>,
+             <code class="i">en-CO</code>…). De ahí sale el mercado de cada usuario y, con él, su huso
+             horario y su divisa.</p></div>
+        <div class="grid g2">
+          <div class="card">
+            <div class="card-head"><div class="card-title">Usuarios registrados por mercado</div></div>
+            <div class="card-sub">Desglosado por idioma de la interfaz</div>
+            <div class="chart h280" id="us-locale"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Antigüedad de las cuentas</div></div>
+            <div class="card-sub">Años desde el alta, comparado con conductores y vehículos</div>
+            <div class="chart h280" id="us-tenure"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><h2>Los usuarios, uno a uno</h2>
+          <p>Tabla explorable: ordena por cualquier columna para encontrar patrones.</p></div>
+        <div class="card">
+          <div class="table-wrap"><table class="dt" id="us-table"></table></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- PÁGINA 8 · CALIDAD DEL DATO                                    -->
+    <!-- ============================================================ -->
+    <section class="page" id="page-quality">
+      <div class="page-head">
+        <div class="page-eyebrow">Datos · Confianza</div>
+        <h1>Lo que el dato no dice de sí mismo</h1>
+        <p class="lede">Antes de defender una cifra hay que saber sobre cuántas filas descansa y qué
+          se descartó por el camino. Esta página documenta los problemas reales encontrados en la
+          fuente y cómo se resolvieron.</p>
+      </div>
+
+      <div class="grid g4" id="dq-kpis"></div>
+
+      <div class="section">
+        <div class="section-head">
+          <h2 id="dq-funnel-title">El embudo de reducción de filas</h2>
+          <p>La tabla de viajes en bruto no contiene viajes, contiene <em>eventos</em>: cada cambio de
+             estado genera una fila nueva. Reducirla es el paso de modelado más importante del proyecto.</p>
+        </div>
+        <div class="card">
+          <div class="funnel" id="dq-funnel"></div>
+        </div>
+        <div class="insight" id="dq-insight-funnel"><span class="ico">🪣</span><div></div></div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><h2>¿Qué había en esas 22.000 filas descartadas?</h2>
+          <p>Clasificación de cada fila del origen según el papel que juega en la vida del viaje.</p></div>
+        <div class="grid g2">
+          <div class="card">
+            <div class="card-head"><div class="card-title">Papel de cada fila en el origen</div></div>
+            <div class="card-sub">Solo el primer grupo y los cambios de estado aportan información</div>
+            <div class="chart h260" id="dq-roles"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Anatomía de un viaje</div></div>
+            <div class="card-sub">Ejemplo real: 17 filas, 4 conductores, un solo desenlace</div>
+            <pre class="code" id="dq-anatomy"></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><h2>Integridad referencial</h2>
+          <p>Qué porcentaje de los identificadores que aparecen en los viajes existe realmente en su
+             tabla de dimensión. Aquí aparece el hallazgo más incómodo del dataset.</p></div>
+        <div class="grid g2">
+          <div class="card">
+            <div class="card-head"><div class="card-title">Cobertura de las dimensiones</div></div>
+            <div class="card-sub">IDs referenciados en viajes que encuentran su fila en la dimensión</div>
+            <div class="dq" id="dq-coverage"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">El identificador fantasma</div></div>
+            <div class="card-sub">Un ID que aparece miles de veces y no es ni un conductor ni un coche</div>
+            <div id="dq-placeholder"></div>
+          </div>
+        </div>
+        <div class="insight alert" id="dq-insight-cov"><span class="ico">⚠️</span><div></div></div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><h2>Completitud y anomalías</h2>
+          <p>Campos vacíos, precios ausentes y geometrías incompletas, contados sobre el origen.</p></div>
+        <div class="grid g2">
+          <div class="card">
+            <div class="card-head"><div class="card-title">Campos incompletos en el origen</div></div>
+            <div class="card-sub">Sobre el total de filas de <code class="i">raw.trip</code></div>
+            <div class="dq" id="dq-nulls"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Pares de coordenadas por viaje</div></div>
+            <div class="card-sub">Se conservan solo los viajes con exactamente dos paradas</div>
+            <div class="table-wrap"><table class="dt" id="dq-stops"></table></div>
+          </div>
+        </div>
+        <div class="insight" id="dq-insight-stops"><span class="ico">📍</span><div></div></div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><h2>Volumetría por capa</h2>
+          <p>Cuántas filas y cuántas entidades vive cada tabla del almacén.</p></div>
+        <div class="card">
+          <div class="table-wrap"><table class="dt" id="dq-layers"></table></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- PÁGINA 9 · METODOLOGÍA                                         -->
+    <!-- ============================================================ -->
+    <section class="page" id="page-method">
+      <div class="page-head">
+        <div class="page-eyebrow">Datos · Cómo está hecho</div>
+        <h1>Del JSON roto al modelo en estrella</h1>
+        <p class="lede">Este informe no consulta la base de datos en vivo: lee un extracto JSON generado
+          desde PostgreSQL. Todo lo que hay detrás — ingesta, limpieza, modelado y agregación — está
+          versionado y es reproducible con un solo comando.</p>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><h2>El recorrido del dato</h2></div>
+        <div class="grid g4" id="mt-layers"></div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><h2>Decisiones de modelado</h2>
+          <p>Las siete que más condicionan lo que se ve en las páginas anteriores.</p></div>
+        <div class="card">
+          <div class="steps">
+            <div class="step"><div class="step-n"></div><div class="step-body">
+              <h3>Reparar el JSON antes de parsearlo</h3>
+              <p>Treinta líneas de <code>trip.json</code> traían una llave <code>}</code> de más y rompían
+                el parseo estándar. Un cargador propio (<code>load_ndjson</code> con <code>repair_line</code>)
+                detecta y corrige esas líneas en vez de abortar la ingesta, de modo que unos pocos
+                registros defectuosos no tumban el fichero entero.</p>
+            </div></div>
+            <div class="step"><div class="step-n"></div><div class="step-body">
+              <h3>Renombrar <code>user</code> a <code>user_id</code></h3>
+              <p><code>USER</code> es palabra reservada en varios dialectos SQL. El renombrado se hace en
+                <code>staging</code>, no en el origen, para que la capa <code>raw</code> siga siendo un
+                reflejo fiel del fichero recibido.</p>
+            </div></div>
+            <div class="step"><div class="step-n"></div><div class="step-body">
+              <h3>Reducir el ruido de eventos conservando las filas que importan</h3>
+              <p>Para cada <code>trip_id</code>, ordenado por <code>updated_at</code>, se conserva: la
+                primera fila del viaje, la primera fila de cada cambio de conductor o vehículo, y la fila
+                de cierre. Como la primera fila con <code>reason</code> informado casi nunca trae precio,
+                la regla de cierre prioriza la primera fila que tenga <em>ambos</em>; si ninguna lo tiene,
+                se queda la primera con <code>reason</code>. Es lo que hace que el precio no se pierda.</p>
+              <pre class="code">is_first_row      → prev_driver_id IS NULL
+is_change_event   → driver_id ≠ prev_driver_id OR car_id ≠ prev_car_id
+final_event_time  → <b>COALESCE</b>(1ª fila con reason <b>y</b> precio,
+                             1ª fila con reason)</pre>
+            </div></div>
+            <div class="step"><div class="step-n"></div><div class="step-body">
+              <h3>Dimensiones con histórico (SCD tipo 2)</h3>
+              <p>Conductores, usuarios y vehículos cambian con el tiempo: un coche se deshabilita, cambia
+                su catálogo de productos. En lugar de quedarse con «la última versión», cada fila lleva
+                <code>valid_from</code>, <code>valid_to</code> e <code>is_valid</code>, y los joins de la
+                tabla de hechos se hacen <em>a fecha del viaje</em>. Así un viaje de septiembre se atribuye
+                al estado que la entidad tenía en septiembre.</p>
+            </div></div>
+            <div class="step"><div class="step-n"></div><div class="step-body">
+              <h3>Filtrar por geometría completa</h3>
+              <p>El 99,8 % de los viajes trae exactamente dos paradas. Los cuatro restantes (cero, una o
+                tres) se quedan en <code>raw</code> pero no entran en <code>fact__trips</code>: sin par
+                origen–destino no se puede calcular ni ruta ni distancia sin inventar datos.</p>
+            </div></div>
+            <div class="step"><div class="step-n"></div><div class="step-body">
+              <h3>Localizar el tiempo y normalizar la divisa</h3>
+              <p>Las marcas de tiempo se desplazan al huso del país del usuario antes de derivar hora,
+                día de la semana y fecha; los precios se convierten a euros con un tipo de cambio por
+                país. Sin lo primero, la curva horaria no significa nada; sin lo segundo, los ingresos
+                por país no se pueden sumar.</p>
+              <p style="margin-top:8px">La conversión tiene un paso previo que es fácil pasar por alto:
+                <b>la unidad en la que viene cada importe</b>. Casi todos los mercados registran el precio
+                en la unidad menor de su divisa (céntimos, centavos), pero <b>Colombia y Chile lo hacen en
+                pesos enteros</b> porque su unidad menor no se usa. Aplicar un <code>/100</code> uniforme
+                dividía los ingresos de esos dos mercados por cien. El modelo lleva por eso una tabla con
+                dos columnas —divisor y tipo de cambio— en lugar de una sola constante.</p>
+              <div class="table-wrap"><table class="dt" id="mt-fx"></table></div>
+              <div class="insight good" style="margin-top:14px"><span class="ico">✔</span><div>
+                <b>Comprobación de sanidad.</b> Tras la corrección, la mediana del ticket queda entre
+                2 € y 10 € en los siete mercados, que es el rango esperable de un trayecto urbano. Antes,
+                Colombia y Chile aparecían con tickets de 0,03 € y 0,05 €: una cifra imposible que el
+                modelo daba por buena porque nadie la contrastaba contra la realidad.</div></div>
+            </div></div>
+            <div class="step"><div class="step-n"></div><div class="step-body">
+              <h3>Derivar los tres tiempos del viaje</h3>
+              <p>Del histórico de eventos salen tres duraciones que la fuente no da explícitas:</p>
+              <pre class="code">duración total     = último updated_at − primer created_at
+tiempo efectivo    = último updated_at − <b>penúltimo</b> updated_at
+tiempo de espera   = duración total − tiempo efectivo</pre>
+              <p style="margin-top:8px">El tiempo efectivo aproxima el tramo con el usuario a bordo; la
+                espera recoge la búsqueda de conductor y los estados intermedios. Es una aproximación
+                declarada, no una medida directa: conviene tenerlo presente al leer los KPIs de tiempo.</p>
+            </div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><h2>Cómo reproducirlo</h2>
+          <p>Tres comandos desde la raíz del repositorio.</p></div>
+        <div class="card">
+          <pre class="code"># 1 · Levantar PostgreSQL y ejecutar el pipeline completo
+docker compose up --build
+
+# 2 · Exportar el extracto que alimenta este informe
+python scripts/export_report_data.py
+
+# 3 · Servirlo en local
+python -m http.server 8080 --directory report
+#    → http://localhost:8080</pre>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><h2>Limitaciones que conviene declarar</h2></div>
+        <div class="grid g2">
+          <div class="insight warn"><span class="ico">📅</span><div><b>Cinco semanas de datos.</b>
+            El periodo va del 1 de septiembre al 7 de octubre de 2021. No hay base para hablar de
+            estacionalidad, tendencia anual ni comparativas interanuales.</div></div>
+          <div class="insight warn"><span class="ico">💱</span><div><b>Tipos de cambio fijos.</b>
+            La conversión a euros usa una tabla estática, no el tipo del día del viaje. Con cinco semanas
+            el sesgo es pequeño, pero existe.</div></div>
+          <div class="insight warn"><span class="ico">🚗</span><div><b>Dimensión de vehículos incompleta.</b>
+            Solo un 4 % de los coches que aparecen en viajes cruza contra <code>dim__cars</code>, así que
+            todo análisis por categoría de vehículo cubre una fracción del volumen.</div></div>
+          <div class="insight warn"><span class="ico">⏱️</span><div><b>Los tiempos son aproximaciones.</b>
+            «Tiempo efectivo» y «espera» se derivan de diferencias entre eventos, no de telemetría.
+            Sirven para comparar entre sí, no como medidas absolutas.</div></div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <span>Generado el <b id="mt-generated">—</b></span>
+        <span>PostgreSQL 16 · dbt-core 1.10 · Docker</span>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script src="assets/vendor/plotly.min.js"></script>
+<script src="assets/vendor/leaflet.js"></script>
+<script src="assets/vendor/leaflet.heat.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

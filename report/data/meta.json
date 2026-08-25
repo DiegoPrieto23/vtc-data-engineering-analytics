@@ -1,0 +1,512 @@
+{
+ "generated_at": "2026-08-25T08:48:44Z",
+ "layers": [
+  {
+   "tabla": "raw.users",
+   "filas": 99,
+   "entidades": 99
+  },
+  {
+   "tabla": "core.dim__users",
+   "filas": 99,
+   "entidades": 99
+  },
+  {
+   "tabla": "staging.users",
+   "filas": 99,
+   "entidades": 99
+  },
+  {
+   "tabla": "core.dim__drivers",
+   "filas": 1564,
+   "entidades": 1564
+  },
+  {
+   "tabla": "staging.drivers",
+   "filas": 1564,
+   "entidades": 1564
+  },
+  {
+   "tabla": "raw.drivers",
+   "filas": 1564,
+   "entidades": 1564
+  },
+  {
+   "tabla": "core.fact__trips",
+   "filas": 5563,
+   "entidades": 1863
+  },
+  {
+   "tabla": "staging.trips",
+   "filas": 5563,
+   "entidades": 1863
+  },
+  {
+   "tabla": "staging.cars",
+   "filas": 16000,
+   "entidades": 14535
+  },
+  {
+   "tabla": "raw.cars",
+   "filas": 16000,
+   "entidades": 14535
+  },
+  {
+   "tabla": "core.dim__cars",
+   "filas": 16000,
+   "entidades": 14535
+  },
+  {
+   "tabla": "raw.trip",
+   "filas": 23919,
+   "entidades": 1867
+  }
+ ],
+ "funnel": {
+  "raw_rows": 23919,
+  "raw_trips": 1867,
+  "staging_rows": 5563,
+  "staging_trips": 1863,
+  "fact_trips": 1863,
+  "trips_with_reason": 1860,
+  "trips_with_price": 1762,
+  "stops_distribution": [
+   {
+    "n_stops": 0,
+    "trips": 1
+   },
+   {
+    "n_stops": 1,
+    "trips": 2
+   },
+   {
+    "n_stops": 2,
+    "trips": 1863
+   },
+   {
+    "n_stops": 3,
+    "trips": 1
+   }
+  ]
+ },
+ "row_roles": [
+  {
+   "rol": "Actualización redundante",
+   "filas": 12967
+  },
+  {
+   "rol": "Cierre (reason informado)",
+   "filas": 7235
+  },
+  {
+   "rol": "Primera fila del viaje",
+   "filas": 1867
+  },
+  {
+   "rol": "Cambio de conductor / vehículo",
+   "filas": 1850
+  }
+ ],
+ "coverage": [
+  {
+   "entidad": "Usuarios",
+   "en_viajes": 99,
+   "con_dimension": 99
+  },
+  {
+   "entidad": "Conductores",
+   "en_viajes": 1566,
+   "con_dimension": 1564
+  },
+  {
+   "entidad": "Vehículos",
+   "en_viajes": 1563,
+   "con_dimension": 62
+  }
+ ],
+ "raw_nulls": {
+  "filas": 23919,
+  "price_nulo": 18631,
+  "reason_vacio": 16678,
+  "driver_placeholder": 8728,
+  "car_placeholder": 8724
+ },
+ "users_by_country": [
+  {
+   "country": "ES",
+   "language": "es",
+   "users": 39
+  },
+  {
+   "country": "CO",
+   "language": "es",
+   "users": 14
+  },
+  {
+   "country": "PE",
+   "language": "es",
+   "users": 12
+  },
+  {
+   "country": "EC",
+   "language": "es",
+   "users": 9
+  },
+  {
+   "country": "CL",
+   "language": "es",
+   "users": 9
+  },
+  {
+   "country": "CO",
+   "language": "en",
+   "users": 4
+  },
+  {
+   "country": "AR",
+   "language": "es",
+   "users": 4
+  },
+  {
+   "country": "AR",
+   "language": "en",
+   "users": 3
+  },
+  {
+   "country": "ES",
+   "language": "en",
+   "users": 3
+  },
+  {
+   "country": "MX",
+   "language": "es",
+   "users": 2
+  }
+ ],
+ "drivers_total": 1564,
+ "cars_total": 14535,
+ "car_fleet": [
+  {
+   "car_type": "lite",
+   "cars": 8664,
+   "licensed": 8644,
+   "disabled": 518
+  },
+  {
+   "car_type": "easy_taxi",
+   "cars": 2072,
+   "licensed": 2068,
+   "disabled": 561
+  },
+  {
+   "car_type": "city",
+   "cars": 968,
+   "licensed": 966,
+   "disabled": 62
+  },
+  {
+   "car_type": "economy_promo",
+   "cars": 686,
+   "licensed": 686,
+   "disabled": 33
+  },
+  {
+   "car_type": "taxi",
+   "cars": 638,
+   "licensed": 637,
+   "disabled": 22
+  },
+  {
+   "car_type": "economy",
+   "cars": 540,
+   "licensed": 540,
+   "disabled": 39
+  },
+  {
+   "car_type": "delivery_motorbike",
+   "cars": 524,
+   "licensed": 524,
+   "disabled": 4
+  },
+  {
+   "car_type": "easy_p2p",
+   "cars": 129,
+   "licensed": 129,
+   "disabled": 31
+  },
+  {
+   "car_type": "duo",
+   "cars": 106,
+   "licensed": 106,
+   "disabled": 6
+  },
+  {
+   "car_type": "executive",
+   "cars": 85,
+   "licensed": 83,
+   "disabled": 3
+  },
+  {
+   "car_type": "easy",
+   "cars": 45,
+   "licensed": 45,
+   "disabled": 13
+  },
+  {
+   "car_type": "delivery",
+   "cars": 23,
+   "licensed": 23,
+   "disabled": 1
+  },
+  {
+   "car_type": "suv",
+   "cars": 22,
+   "licensed": 22,
+   "disabled": 9
+  },
+  {
+   "car_type": "pride",
+   "cars": 6,
+   "licensed": 6,
+   "disabled": 0
+  },
+  {
+   "car_type": "asap",
+   "cars": 6,
+   "licensed": 6,
+   "disabled": 1
+  },
+  {
+   "car_type": "lite_mujer",
+   "cars": 5,
+   "licensed": 5,
+   "disabled": 0
+  },
+  {
+   "car_type": "group",
+   "cars": 5,
+   "licensed": 5,
+   "disabled": 0
+  },
+  {
+   "car_type": "cabifly",
+   "cars": 3,
+   "licensed": 3,
+   "disabled": 0
+  },
+  {
+   "car_type": "delivery_car",
+   "cars": 2,
+   "licensed": 2,
+   "disabled": 2
+  },
+  {
+   "car_type": "e_mov",
+   "cars": 2,
+   "licensed": 2,
+   "disabled": 0
+  },
+  {
+   "car_type": "health",
+   "cars": 2,
+   "licensed": 2,
+   "disabled": 0
+  },
+  {
+   "car_type": "express",
+   "cars": 1,
+   "licensed": 1,
+   "disabled": 0
+  },
+  {
+   "car_type": "breastcancerday",
+   "cars": 1,
+   "licensed": 1,
+   "disabled": 0
+  }
+ ],
+ "driver_state": [
+  {
+   "state": "NaN",
+   "drivers": 1489
+  },
+  {
+   "state": "orjtnDBbjqhhFrYDzKeKlw==",
+   "drivers": 75
+  }
+ ],
+ "tenure": [
+  {
+   "entity_type": "car",
+   "years_registered": 4,
+   "num_entities": 9598
+  },
+  {
+   "entity_type": "car",
+   "years_registered": 5,
+   "num_entities": 2268
+  },
+  {
+   "entity_type": "car",
+   "years_registered": 6,
+   "num_entities": 1844
+  },
+  {
+   "entity_type": "car",
+   "years_registered": 7,
+   "num_entities": 1928
+  },
+  {
+   "entity_type": "car",
+   "years_registered": 8,
+   "num_entities": 302
+  },
+  {
+   "entity_type": "car",
+   "years_registered": 9,
+   "num_entities": 57
+  },
+  {
+   "entity_type": "car",
+   "years_registered": 10,
+   "num_entities": 3
+  },
+  {
+   "entity_type": "driver",
+   "years_registered": 4,
+   "num_entities": 133
+  },
+  {
+   "entity_type": "driver",
+   "years_registered": 5,
+   "num_entities": 519
+  },
+  {
+   "entity_type": "driver",
+   "years_registered": 6,
+   "num_entities": 533
+  },
+  {
+   "entity_type": "driver",
+   "years_registered": 7,
+   "num_entities": 248
+  },
+  {
+   "entity_type": "driver",
+   "years_registered": 8,
+   "num_entities": 73
+  },
+  {
+   "entity_type": "driver",
+   "years_registered": 9,
+   "num_entities": 46
+  },
+  {
+   "entity_type": "driver",
+   "years_registered": 10,
+   "num_entities": 9
+  },
+  {
+   "entity_type": "driver",
+   "years_registered": 11,
+   "num_entities": 3
+  },
+  {
+   "entity_type": "user",
+   "years_registered": 8,
+   "num_entities": 31
+  },
+  {
+   "entity_type": "user",
+   "years_registered": 9,
+   "num_entities": 43
+  },
+  {
+   "entity_type": "user",
+   "years_registered": 10,
+   "num_entities": 11
+  },
+  {
+   "entity_type": "user",
+   "years_registered": 11,
+   "num_entities": 11
+  },
+  {
+   "entity_type": "user",
+   "years_registered": 12,
+   "num_entities": 2
+  },
+  {
+   "entity_type": "user",
+   "years_registered": 14,
+   "num_entities": 1
+  }
+ ],
+ "date_ranges": [
+  {
+   "entidad": "trips",
+   "desde": "2021-09-01",
+   "hasta": "2021-10-07"
+  },
+  {
+   "entidad": "users",
+   "desde": "2012-01-25",
+   "hasta": "2018-02-11"
+  },
+  {
+   "entidad": "drivers",
+   "desde": "2014-09-22",
+   "hasta": "2021-09-30"
+  },
+  {
+   "entidad": "cars",
+   "desde": "2016-04-06",
+   "hasta": "2022-01-24"
+  }
+ ],
+ "fx": [
+  {
+   "country": "AR",
+   "currency": "ARS",
+   "minor_units": 100,
+   "rate": 0.00875
+  },
+  {
+   "country": "CL",
+   "currency": "CLP",
+   "minor_units": 1,
+   "rate": 0.00105
+  },
+  {
+   "country": "CO",
+   "currency": "COP",
+   "minor_units": 1,
+   "rate": 0.000226
+  },
+  {
+   "country": "EC",
+   "currency": "USD",
+   "minor_units": 100,
+   "rate": 0.845
+  },
+  {
+   "country": "ES",
+   "currency": "EUR",
+   "minor_units": 100,
+   "rate": 1.0
+  },
+  {
+   "country": "MX",
+   "currency": "MXN",
+   "minor_units": 100,
+   "rate": 0.0417
+  },
+  {
+   "country": "PE",
+   "currency": "PEN",
+   "minor_units": 100,
+   "rate": 0.2225
+  }
+ ],
+ "placeholder_id": "1B2M2Y8AsgTpgAmY7PhCfg=="
+}

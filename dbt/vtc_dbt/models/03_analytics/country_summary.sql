@@ -1,5 +1,12 @@
 {{ config(materialized='view') }}
 
+-- Resumen por mercado. El país de un viaje se toma del `locale` del usuario,
+-- que es la única señal de mercado que trae el dataset.
+--
+-- Nota: `dim__drivers.state` NO es un país, es un identificador hasheado, así
+-- que el número de conductores por mercado se cuenta a partir de los conductores
+-- que realmente aparecen en viajes de ese país.
+
 WITH user_stats AS (
     SELECT
         locale_country AS country,
@@ -9,10 +16,11 @@ WITH user_stats AS (
 ),
 driver_stats AS (
     SELECT
-        state AS driver_state,
+        user_country AS country,
         COUNT(DISTINCT driver_id) AS num_drivers
-    FROM {{ ref('dim__drivers') }}
-    GROUP BY state
+    FROM {{ ref('fact__trips') }}
+    WHERE driver_id <> '1B2M2Y8AsgTpgAmY7PhCfg=='   -- placeholder: viaje sin asignar
+    GROUP BY user_country
 ),
 trip_stats AS (
     SELECT
@@ -39,4 +47,5 @@ SELECT
     t.avg_waiting_time_min
 FROM trip_stats t
 LEFT JOIN user_stats u ON t.country = u.country
-LEFT JOIN driver_stats d ON d.driver_state = t.country
+LEFT JOIN driver_stats d ON t.country = d.country
+ORDER BY t.total_revenue_eur DESC
