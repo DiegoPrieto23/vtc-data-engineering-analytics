@@ -173,12 +173,6 @@ a { color: var(--brand); }
 }
 
 .brand { display: flex; align-items: center; gap: 10px; padding: 0 8px 18px; }
-.brand-mark {
-  width: 32px; height: 32px; border-radius: 10px; flex: none;
-  background: linear-gradient(140deg, #8b6ef5, #5c45bb 60%, #3a2a7a);
-  display: grid; place-items: center; color: #fff; font-size: 16px;
-  box-shadow: 0 4px 14px -4px rgba(140,110,245,.8);
-}
 .brand-name { font-size: 14.5px; font-weight: 680; color: #fff; letter-spacing: -.01em; }
 .brand-sub  { font-size: 11px; color: var(--sidebar-ink-2); letter-spacing: .04em; text-transform: uppercase; }
 

@@ -201,14 +201,15 @@ PG_HOST_LOCAL=127.0.0.1 PG_PORT_LOCAL=5433 python scripts/export_report_data.py
 
 `report/` es un sitio estático con los datos ya incluidos, así que se publica sin más.
 
-**Opción A — Deploy from a branch** (la configurada): en *Settings → Pages*, `main` / `root`.
+En *Settings → Pages*, *Source: Deploy from a branch*, `main` / `root`.
 El repositorio incluye un `index.html` en la raíz que redirige a `report/`, de modo que la
 URL raíz del sitio abre el dashboard. También sigue accesible en
 `https://<usuario>.github.io/<repositorio>/report/`.
 
-**Opción B — GitHub Actions**: en *Settings → Pages*, elige *GitHub Actions* como *Source*.
-El workflow [`.github/workflows/pages.yml`](.github/workflows/pages.yml) publica `report/`
-como raíz del sitio en cada push a `main`.
+> Una única fuente de despliegue a propósito: si además se publica con un workflow de
+> GitHub Actions, ambos despliegues compiten en cada push y el sitio alterna entre servir
+> la raíz del repositorio y servir `report/` como raíz, con lo que `/report/` devuelve 404
+> de forma intermitente.
 
 ---
 
