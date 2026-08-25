@@ -1,4 +1,6 @@
-# 🚖 VTC Data Engineering Analytics Challenge
+# VTC Data Engineering Analytics Challenge
+
+### 👉 **[Ver el dashboard en vivo](https://diegoprieto23.github.io/vtc-data-engineering-analytics/report/)**
 
 Solución completa (*end-to-end*) de **Data Engineering & Analytics** sobre un dataset de
 **VTC / ride-hailing**: ingesta de los JSON en bruto, limpieza, modelado en estrella con
@@ -9,9 +11,9 @@ ejecuta el pipeline completo.
 
 ---
 
-## 📈 El informe interactivo
+## El informe interactivo
 
-### 👉 **[Ver el dashboard en vivo](https://diegoprieto23.github.io/vtc-data-engineering-analytics/report/)**
+
 
 Nueve páginas agrupadas por tipo de información, con **filtros globales** (país, ciudad,
 desenlace del viaje, tipo de vehículo, rango de fechas) que se propagan a todas ellas a la
@@ -43,7 +45,7 @@ más allá de los *tiles* del mapa.
 
 ---
 
-## 🧭 Qué hay en este repositorio
+## Qué hay en este repositorio
 
 ```
 ├── src/                  # ETL de ingesta: descompresión, parseo, carga en `raw`
@@ -55,7 +57,7 @@ más allá de los *tiles* del mapa.
 └── docs/                 # Documentación de arquitectura y diseño
 ```
 
-📚 **Documentación detallada:**
+**Documentación detallada:**
 
 - **[Arquitectura y decisiones de diseño](docs/ARQUITECTURA.md)** — esquemas, modelo en
   estrella, por qué cada decisión de modelado, cómo está construido el informe y qué
@@ -65,7 +67,7 @@ más allá de los *tiles* del mapa.
 
 ---
 
-## ⚙️ Requisitos previos
+## Requisitos previos
 
 - [Docker](https://www.docker.com/) y [Docker Compose](https://docs.docker.com/compose/), o
   directamente [Docker Desktop](https://www.docker.com/products/docker-desktop), que trae ambos.
@@ -81,7 +83,7 @@ pip install -r requirements.txt
 
 ---
 
-## 🔐 Configuración de las credenciales
+## Configuración de las credenciales
 
 Las credenciales **no se guardan en el repositorio**. El proyecto las lee de un fichero
 `.env` local, excluido en el `.gitignore`.
@@ -107,7 +109,7 @@ fallan al arrancar con un mensaje explícito en lugar de recurrir a un valor por
 
 ---
 
-## 🚀 Ejecutar el pipeline
+## Ejecutar el pipeline
 
 ### 1. Clonar el repositorio
 
@@ -158,7 +160,7 @@ docker compose down -v    # parar y borrar los datos
 
 ---
 
-## 📊 Regenerar y ver el informe en local
+## Regenerar y ver el informe en local
 
 El informe lee un extracto JSON versionado en `report/data/`, así que **para verlo publicado
 no hace falta ni Docker ni base de datos**. Solo hay que regenerarlo si cambian los datos o
@@ -195,7 +197,7 @@ PG_HOST_LOCAL=127.0.0.1 PG_PORT_LOCAL=5433 python scripts/export_report_data.py
 
 ---
 
-## 🌐 Publicar el informe en GitHub Pages
+## Publicar el informe en GitHub Pages
 
 `report/` es un sitio estático con los datos ya incluidos, así que se publica sin más.
 
@@ -210,7 +212,7 @@ como raíz del sitio en cada push a `main`.
 
 ---
 
-## 🧭 Explorar la base de datos
+## Explorar la base de datos
 
 Conéctate a la instancia de PostgreSQL con DBeaver, pgAdmin o cualquier cliente SQL:
 
@@ -226,7 +228,7 @@ Una vez conectado puedes recorrer las cuatro capas: `raw` → `staging` → `cor
 
 ---
 
-## 📓 Notebooks
+## Notebooks
 
 - 🔍 **[01_exploratory_data_analysis.ipynb](notebooks/01_exploratory_data_analysis.ipynb)** —
   análisis exploratorio de `raw`: estructura, calidad, duplicados, relaciones entre entidades
@@ -240,7 +242,7 @@ Una vez conectado puedes recorrer las cuatro capas: `raw` → `staging` → `cor
 
 ---
 
-## 🧾 Resumen
+## Resumen
 
 - Extracción, limpieza y modelado automatizados y reproducibles.
 - Arquitectura por capas (`raw` → `staging` → `core` → `analytics`), lista para analítica.
