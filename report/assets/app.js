@@ -1531,7 +1531,18 @@ updated_at (UTC)   driver           reason     price
        origen–destino no se puede calcular ruta ni distancia sin inventar el dato que falta.`
     : 'Sin datos de geometría.');
 
-  const lay = m.layers || [];
+  // El extracto trae las tablas sin un orden útil. Se ordenan por entidad y,
+  // dentro de cada una, por capa, para poder seguir un mismo dato de raw a core
+  // leyendo hacia abajo: raw.trip → staging.trips → core.fact__trips, etc.
+  const ENTIDADES = ['trip', 'user', 'driver', 'car'];
+  const CAPAS     = ['raw', 'staging', 'core', 'analytics'];
+  const entidad = t => t.split('.').pop()            // core.fact__trips → fact__trips
+    .replace(/^(fact|dim|staging)__/, '')            // → trips
+    .replace(/s$/, '');                              // → trip
+  const pos = (orden, v) => { const i = orden.indexOf(v); return i < 0 ? orden.length : i; };
+  const lay = [...(m.layers || [])].sort((a, b) =>
+    pos(ENTIDADES, entidad(a.tabla)) - pos(ENTIDADES, entidad(b.tabla)) ||
+    pos(CAPAS, a.tabla.split('.')[0]) - pos(CAPAS, b.tabla.split('.')[0]));
   table('dq-layers', [
     { h:'Tabla', cls:'mono', f:r => esc(r.tabla) },
     { h:'Capa', f:r => { const s = r.tabla.split('.')[0];
