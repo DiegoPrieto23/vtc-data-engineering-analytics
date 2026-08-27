@@ -134,6 +134,24 @@ Esto arranca PostgreSQL, crea los esquemas (`raw`, `staging`, `core`, `analytics
 datos en bruto y ejecuta todas las transformaciones de dbt. Al terminar, los datos están
 listos para explorarse.
 
+Además levanta el servicio `report`, que sirve el informe interactivo y anuncia la URL en
+los propios logs:
+
+```text
+vtc_report  | ────────────────────────────────────────────────────
+vtc_report  |   📊 Informe VTC disponible en:
+vtc_report  |      👉 http://localhost:8080
+```
+
+El puerto se controla con `REPORT_PORT` en el `.env` (8080 por defecto); cámbialo si ya lo
+tienes ocupado. El informe no espera al pipeline: lee el extracto JSON versionado en
+`report/data/`, así que está disponible desde el primer momento.
+
+```bash
+# Solo el informe, sin base de datos ni pipeline
+docker compose up report
+```
+
 ```bash
 # Ejecución puntual: más ligera, los contenedores se eliminan al acabar
 docker compose run --rm app
@@ -170,9 +188,12 @@ los modelos:
 # 1 · Exportar el extracto desde PostgreSQL
 docker compose run --rm --no-deps app python scripts/export_report_data.py
 
-# 2 · Servir la carpeta report/
-python -m http.server 8080 --directory report
+# 2 · Servirlo (el servicio imprime la URL al arrancar)
+docker compose up report
 #    → http://localhost:8080
+
+# Alternativa sin Docker, equivalente:
+python scripts/serve_report.py
 ```
 
 > ⚠️ Hay que servirlo por HTTP. Abrir `report/index.html` con `file://` no funciona: el
