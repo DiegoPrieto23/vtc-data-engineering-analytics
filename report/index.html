@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>VTC Analytics · Informe interactivo</title>
 <meta name="description" content="Informe interactivo de negocio sobre el dataset VTC / ride-hailing: KPIs, demanda, rutas, conductores y calidad del dato.">
+<link rel="preload" href="assets/vendor/fonts/plex-sans-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/vendor/fonts/plex-mono-500-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="assets/vendor/leaflet.css">
 <link rel="stylesheet" href="assets/styles.css">
 </head>
@@ -17,27 +19,27 @@
     <div class="brand">
       <div>
         <div class="brand-name">VTC Analytics</div>
-        <div class="brand-sub">Sep–Oct 2021</div>
+        <div class="brand-sub">Sep-Oct 2021</div>
       </div>
     </div>
 
     <nav class="nav" id="nav">
       <div class="nav-group">Negocio</div>
-      <button class="nav-item" data-page="overview"><span class="nav-ico">◎</span>Resumen ejecutivo</button>
-      <button class="nav-item" data-page="revenue"><span class="nav-ico">€</span>Ingresos y precio</button>
-      <button class="nav-item" data-page="demand"><span class="nav-ico">◷</span>Demanda y horarios</button>
+      <button class="nav-item" data-page="overview">Resumen ejecutivo</button>
+      <button class="nav-item" data-page="revenue">Ingresos y precio</button>
+      <button class="nav-item" data-page="demand">Demanda y horarios</button>
 
       <div class="nav-group">Operación</div>
-      <button class="nav-item" data-page="geo"><span class="nav-ico">◈</span>Mapa y rutas</button>
-      <button class="nav-item" data-page="ops"><span class="nav-ico">⚙</span>Conductores y flota</button>
-      <button class="nav-item" data-page="funnel"><span class="nav-ico">▽</span>Conversión del viaje</button>
+      <button class="nav-item" data-page="geo">Mapa y rutas</button>
+      <button class="nav-item" data-page="ops">Conductores y flota</button>
+      <button class="nav-item" data-page="funnel">Conversión del viaje</button>
 
       <div class="nav-group">Clientes</div>
-      <button class="nav-item" data-page="users"><span class="nav-ico">☺</span>Usuarios y fidelidad</button>
+      <button class="nav-item" data-page="users">Usuarios y fidelidad</button>
 
       <div class="nav-group">Datos</div>
-      <button class="nav-item" data-page="quality"><span class="nav-ico">✓</span>Calidad del dato</button>
-      <button class="nav-item" data-page="method"><span class="nav-ico">⌥</span>Modelo y metodología</button>
+      <button class="nav-item" data-page="quality">Calidad del dato</button>
+      <button class="nav-item" data-page="method">Modelo y metodología</button>
     </nav>
 
     <div class="sidebar-foot">
@@ -51,7 +53,7 @@
 
     <!-- Barra de filtros globales -->
     <div class="topbar">
-      <div class="topbar-title"><b id="tb-title">Resumen ejecutivo</b> · <span id="tb-count">—</span></div>
+      <div class="topbar-title"><b id="tb-title">Resumen ejecutivo</b> · <span id="tb-count">-</span></div>
       <div class="filters" id="filters">
         <div class="slicer" data-dim="c">
           <button class="slicer-btn" type="button">País <span class="caret">▼</span></button>
@@ -90,7 +92,7 @@
         <p id="ov-lede" class="lede"></p>
       </div>
 
-      <div class="grid g5" id="ov-kpis"></div>
+      <div class="grid g5 kpi-row" id="ov-kpis"></div>
 
       <div class="section">
         <div class="section-head">
@@ -110,7 +112,7 @@
             <div class="chart h260" id="ov-rev-day"></div>
           </div>
         </div>
-        <div class="insight" id="ov-insight-time"><span class="ico">📈</span><div></div></div>
+        <div class="insight" id="ov-insight-time"><div></div></div>
       </div>
 
       <div class="section">
@@ -131,7 +133,7 @@
             <div class="table-wrap"><table class="dt" id="ov-cities"></table></div>
           </div>
         </div>
-        <div class="insight" id="ov-insight-geo"><span class="ico">🌍</span><div></div></div>
+        <div class="insight" id="ov-insight-geo"><div></div></div>
       </div>
 
       <div class="section">
@@ -161,7 +163,7 @@
           de cambio. Esta página trabaja siempre en euros ya normalizados.</p>
       </div>
 
-      <div class="grid g4" id="rv-kpis"></div>
+      <div class="grid g4 kpi-row" id="rv-kpis"></div>
 
       <div class="section">
         <div class="section-head">
@@ -181,7 +183,7 @@
             <div class="chart h300" id="rv-box-eur"></div>
           </div>
         </div>
-        <div class="insight" id="rv-insight-fx"><span class="ico">💱</span><div></div></div>
+        <div class="insight" id="rv-insight-fx"><div></div></div>
       </div>
 
       <div class="section">
@@ -220,7 +222,7 @@
             <div class="chart h340" id="rv-rpm"></div>
           </div>
         </div>
-        <div class="insight" id="rv-insight-price"><span class="ico">🧮</span><div></div></div>
+        <div class="insight" id="rv-insight-price"><div></div></div>
       </div>
 
       <div class="section">
@@ -255,7 +257,7 @@
           a nadie. Aquí todo está ya en hora local del usuario.</p>
       </div>
 
-      <div class="grid g4" id="dm-kpis"></div>
+      <div class="grid g4 kpi-row" id="dm-kpis"></div>
 
       <div class="section">
         <div class="section-head">
@@ -273,7 +275,7 @@
             <span>Más viajes</span>
           </div>
         </div>
-        <div class="insight" id="dm-insight-hm"><span class="ico">🕒</span><div></div></div>
+        <div class="insight" id="dm-insight-hm"><div></div></div>
       </div>
 
       <div class="section">
@@ -309,7 +311,7 @@
             <div class="chart h300" id="dm-duration"></div>
           </div>
         </div>
-        <div class="insight" id="dm-insight-times"><span class="ico">⏱️</span><div></div></div>
+        <div class="insight" id="dm-insight-times"><div></div></div>
       </div>
 
       <div class="section">
@@ -352,21 +354,22 @@
           </label>
         </div>
         <div class="map h520" id="geo-map"></div>
-        <div class="map-legend">
-          <span><i class="dot" style="background:var(--series-3)"></i>Punto de recogida <em style="color:var(--text-muted);font-style:normal">(disco)</em></span>
-          <span><i class="dot" style="background:transparent;border-color:var(--series-2);border-width:2.5px"></i>Punto de dejada <em style="color:var(--text-muted);font-style:normal">(anillo)</em></span>
-          <span><i class="dot" style="background:var(--series-1)"></i>Corredor (grosor y color = nº de viajes)</span>
+        <div class="map-legend" id="geo-legend">
+          <span><i class="dot" style="background:var(--series-3)"></i>Recogida <em style="color:var(--text-muted);font-style:normal">(disco)</em></span>
+          <span><i class="dot" style="background:transparent;border-color:var(--series-2);border-width:2.5px"></i>Dejada <em style="color:var(--text-muted);font-style:normal">(anillo)</em></span>
+          <span><i class="dot" style="background:var(--series-1)"></i>Corredor <em style="color:var(--text-muted);font-style:normal">(grosor = viajes)</em></span>
+          <span class="heat-item">Poco transitado <i class="ramp heat"></i> Con tráfico</span>
           <span style="margin-left:auto" id="geo-caption"></span>
         </div>
       </div>
 
-      <div class="insight" id="geo-insight"><span class="ico">🗺️</span><div></div></div>
+      <div class="insight" id="geo-insight"><div></div></div>
 
       <div class="section">
         <div class="grid g2">
           <div class="card">
             <div class="card-head"><div class="card-title">Corredores más demandados</div></div>
-            <div class="card-sub">Pares origen–destino redondeados a ~1 km · pulsa una fila para centrar el mapa</div>
+            <div class="card-sub">Pares origen-destino redondeados a ~1 km · pulsa una fila para centrar el mapa</div>
             <div class="table-wrap"><table class="dt" id="geo-routes"></table></div>
           </div>
           <div class="card">
@@ -393,7 +396,7 @@
             <div class="table-wrap"><table class="dt" id="geo-speed"></table></div>
           </div>
         </div>
-        <div class="insight" id="geo-insight-speed"><span class="ico">🧭</span><div></div></div>
+        <div class="insight" id="geo-insight-speed"><div></div></div>
       </div>
     </section>
 
@@ -409,7 +412,7 @@
           de fricción en el emparejamiento.</p>
       </div>
 
-      <div class="grid g4" id="op-kpis"></div>
+      <div class="grid g4 kpi-row" id="op-kpis"></div>
 
       <div class="section">
         <div class="section-head">
@@ -429,7 +432,7 @@
             <div class="chart h280" id="op-changes-outcome"></div>
           </div>
         </div>
-        <div class="insight" id="op-insight-changes"><span class="ico">🔄</span><div></div></div>
+        <div class="insight" id="op-insight-changes"><div></div></div>
       </div>
 
       <div class="section">
@@ -448,7 +451,7 @@
             <div class="table-wrap"><table class="dt" id="op-drivers"></table></div>
           </div>
         </div>
-        <div class="insight" id="op-insight-lorenz"><span class="ico">📊</span><div></div></div>
+        <div class="insight" id="op-insight-lorenz"><div></div></div>
       </div>
 
       <div class="section">
@@ -482,7 +485,7 @@
           destino, si el usuario canceló, si nadie apareció o si lo tumbó el sistema.</p>
       </div>
 
-      <div class="grid g4" id="fn-kpis"></div>
+      <div class="grid g4 kpi-row" id="fn-kpis"></div>
 
       <div class="section">
         <div class="section-head"><h2>El desenlace de cada viaje</h2>
@@ -499,7 +502,7 @@
             <div class="table-wrap"><table class="dt" id="fn-table"></table></div>
           </div>
         </div>
-        <div class="insight" id="fn-insight"><span class="ico">🎯</span><div></div></div>
+        <div class="insight" id="fn-insight"><div></div></div>
       </div>
 
       <div class="section">
@@ -517,7 +520,7 @@
             <div class="chart h300" id="fn-hour"></div>
           </div>
         </div>
-        <div class="insight" id="fn-insight-when"><span class="ico">📉</span><div></div></div>
+        <div class="insight" id="fn-insight-when"><div></div></div>
       </div>
 
       <div class="section">
@@ -528,7 +531,7 @@
           <div class="card-sub">Tramos de espera en minutos · % de viajes por desenlace dentro de cada tramo</div>
           <div class="chart h300" id="fn-wait"></div>
         </div>
-        <div class="insight" id="fn-insight-wait"><span class="ico">⌛</span><div></div></div>
+        <div class="insight" id="fn-insight-wait"><div></div></div>
       </div>
     </section>
 
@@ -544,7 +547,7 @@
           muy densa por usuario, más que en una foto de mercado.</p>
       </div>
 
-      <div class="grid g4" id="us-kpis"></div>
+      <div class="grid g4 kpi-row" id="us-kpis"></div>
 
       <div class="section">
         <div class="section-head"><h2>¿Cómo se reparte el uso?</h2>
@@ -561,7 +564,7 @@
             <div class="chart h280" id="us-lorenz"></div>
           </div>
         </div>
-        <div class="insight" id="us-insight"><span class="ico">👥</span><div></div></div>
+        <div class="insight" id="us-insight"><div></div></div>
       </div>
 
       <div class="section">
@@ -604,7 +607,7 @@
           fuente y cómo se resolvieron.</p>
       </div>
 
-      <div class="grid g4" id="dq-kpis"></div>
+      <div class="grid g4 kpi-row" id="dq-kpis"></div>
 
       <div class="section">
         <div class="section-head">
@@ -615,7 +618,7 @@
         <div class="card">
           <div class="funnel" id="dq-funnel"></div>
         </div>
-        <div class="insight" id="dq-insight-funnel"><span class="ico">🪣</span><div></div></div>
+        <div class="insight" id="dq-insight-funnel"><div></div></div>
       </div>
 
       <div class="section">
@@ -651,7 +654,7 @@
             <div id="dq-placeholder"></div>
           </div>
         </div>
-        <div class="insight alert" id="dq-insight-cov"><span class="ico">⚠️</span><div></div></div>
+        <div class="insight alert" id="dq-insight-cov"><div></div></div>
       </div>
 
       <div class="section">
@@ -669,7 +672,7 @@
             <div class="table-wrap"><table class="dt" id="dq-stops"></table></div>
           </div>
         </div>
-        <div class="insight" id="dq-insight-stops"><span class="ico">📍</span><div></div></div>
+        <div class="insight" id="dq-insight-stops"><div></div></div>
       </div>
 
       <div class="section">
@@ -689,7 +692,7 @@
         <div class="page-eyebrow">Datos · Cómo está hecho</div>
         <h1>Del JSON roto al modelo en estrella</h1>
         <p class="lede">Este informe no consulta la base de datos en vivo: lee un extracto JSON generado
-          desde PostgreSQL. Todo lo que hay detrás — ingesta, limpieza, modelado y agregación — está
+          desde PostgreSQL. Todo lo que hay detrás (ingesta, limpieza, modelado y agregación) está
           versionado y es reproducible con un solo comando.</p>
       </div>
 
@@ -740,7 +743,7 @@ final_event_time  → <b>COALESCE</b>(1ª fila con reason <b>y</b> precio,
               <h3>Filtrar por geometría completa</h3>
               <p>El 99,8 % de los viajes trae exactamente dos paradas. Los cuatro restantes (cero, una o
                 tres) se quedan en <code>raw</code> pero no entran en <code>fact__trips</code>: sin par
-                origen–destino no se puede calcular ni ruta ni distancia sin inventar datos.</p>
+                origen-destino no se puede calcular ni ruta ni distancia sin inventar datos.</p>
             </div></div>
             <div class="step"><div class="step-n"></div><div class="step-body">
               <h3>Localizar el tiempo y normalizar la divisa</h3>
@@ -753,9 +756,9 @@ final_event_time  → <b>COALESCE</b>(1ª fila con reason <b>y</b> precio,
                 en la unidad menor de su divisa (céntimos, centavos), pero <b>Colombia y Chile lo hacen en
                 pesos enteros</b> porque su unidad menor no se usa. Aplicar un <code>/100</code> uniforme
                 dividía los ingresos de esos dos mercados por cien. El modelo lleva por eso una tabla con
-                dos columnas —divisor y tipo de cambio— en lugar de una sola constante.</p>
+                dos columnas (divisor y tipo de cambio) en lugar de una sola constante.</p>
               <div class="table-wrap"><table class="dt" id="mt-fx"></table></div>
-              <div class="insight good" style="margin-top:14px"><span class="ico">✔</span><div>
+              <div class="insight good" style="margin-top:14px"><div>
                 <b>Comprobación de sanidad.</b> Tras la corrección, la mediana del ticket queda entre
                 2 € y 10 € en los siete mercados, que es el rango esperable de un trayecto urbano. Antes,
                 Colombia y Chile aparecían con tickets de 0,03 € y 0,05 €: una cifra imposible que el
@@ -794,24 +797,24 @@ python -m http.server 8080 --directory report
       <div class="section">
         <div class="section-head"><h2>Limitaciones que conviene declarar</h2></div>
         <div class="grid g2">
-          <div class="insight warn"><span class="ico">📅</span><div><b>Cinco semanas de datos.</b>
+          <div class="insight warn"><div><b>Cinco semanas de datos.</b>
             El periodo va del 1 de septiembre al 7 de octubre de 2021. No hay base para hablar de
             estacionalidad, tendencia anual ni comparativas interanuales.</div></div>
-          <div class="insight warn"><span class="ico">💱</span><div><b>Tipos de cambio fijos.</b>
+          <div class="insight warn"><div><b>Tipos de cambio fijos.</b>
             La conversión a euros usa una tabla estática, no el tipo del día del viaje. Con cinco semanas
             el sesgo es pequeño, pero existe.</div></div>
-          <div class="insight warn"><span class="ico">🚗</span><div><b>Dimensión de vehículos incompleta.</b>
+          <div class="insight warn"><div><b>Dimensión de vehículos incompleta.</b>
             Solo un 4 % de los coches que aparecen en viajes cruza contra <code>dim__cars</code>, así que
             todo análisis por categoría de vehículo cubre una fracción del volumen.</div></div>
-          <div class="insight warn"><span class="ico">⏱️</span><div><b>Los tiempos son aproximaciones.</b>
+          <div class="insight warn"><div><b>Los tiempos son aproximaciones.</b>
             «Tiempo efectivo» y «espera» se derivan de diferencias entre eventos, no de telemetría.
             Sirven para comparar entre sí, no como medidas absolutas.</div></div>
         </div>
       </div>
 
       <div class="footer">
-        <span>Generado el <b id="mt-generated">—</b></span>
-        <span>PostgreSQL 16 · dbt-core 1.10 · Docker</span>
+        <span>Generado el <b id="mt-generated">-</b></span>
+        <span>PostgreSQL 16</span><span>dbt-core 1.10</span><span>Docker</span>
       </div>
     </section>
 

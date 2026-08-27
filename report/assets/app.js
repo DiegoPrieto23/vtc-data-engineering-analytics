@@ -56,12 +56,12 @@ const nf  = new Intl.NumberFormat('es-ES');
 const nf1 = new Intl.NumberFormat('es-ES', { minimumFractionDigits:1, maximumFractionDigits:1 });
 const nf2 = new Intl.NumberFormat('es-ES', { minimumFractionDigits:2, maximumFractionDigits:2 });
 
-const n  = v => (v == null || Number.isNaN(v)) ? '—' : nf.format(Math.round(v));
-const n1 = v => (v == null || Number.isNaN(v)) ? '—' : nf1.format(v);
-const n2 = v => (v == null || Number.isNaN(v)) ? '—' : nf2.format(v);
-const eur  = v => (v == null || Number.isNaN(v)) ? '—' : nf.format(Math.round(v)) + ' €';
-const eur2 = v => (v == null || Number.isNaN(v)) ? '—' : nf2.format(v) + ' €';
-const pct  = v => (v == null || Number.isNaN(v)) ? '—' : nf1.format(v) + ' %';
+const n  = v => (v == null || Number.isNaN(v)) ? '-' : nf.format(Math.round(v));
+const n1 = v => (v == null || Number.isNaN(v)) ? '-' : nf1.format(v);
+const n2 = v => (v == null || Number.isNaN(v)) ? '-' : nf2.format(v);
+const eur  = v => (v == null || Number.isNaN(v)) ? '-' : nf.format(Math.round(v)) + ' €';
+const eur2 = v => (v == null || Number.isNaN(v)) ? '-' : nf2.format(v) + ' €';
+const pct  = v => (v == null || Number.isNaN(v)) ? '-' : nf1.format(v) + ' %';
 const cname = c => COUNTRY[c] || c || 'Sin país';
 const cflag = c => cname(c);                       // texto plano: seguro en ejes de gráficos
 const cbadge = c => (c && COUNTRY[c] ? `<span class="cc">${esc(c)}</span> ` : '') + esc(cname(c));
@@ -69,7 +69,7 @@ const cdot  = c => (c && COUNTRY[c] ? `<span class="cc">${esc(c)}</span> ` : '')
 const rname = r => REASON[r || '__null'] || r;
 const rshort = r => REASON_SHORT[r || '__null'] || r;
 const esc = s => String(s ?? '').replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
-const dmy = iso => { if (!iso) return '—'; const [y,m,d] = iso.split('-'); return `${d}/${m}/${y}`; };
+const dmy = iso => { if (!iso) return '-'; const [y,m,d] = iso.split('-'); return `${d}/${m}/${y}`; };
 const dmyShort = iso => { const [,m,d] = iso.split('-'); return `${d}/${m}`; };
 
 // ---------------------------------------------------------------------------
@@ -161,8 +161,8 @@ function emptyBox(id, msg = 'Sin datos para los filtros aplicados') {
 const tip = document.createElement('div');
 Object.assign(tip.style, {
   position:'fixed', zIndex:'999', pointerEvents:'none', display:'none',
-  padding:'7px 10px', borderRadius:'8px', fontSize:'12px', lineHeight:'1.45',
-  boxShadow:'0 6px 22px -8px rgba(0,0,0,.5)', maxWidth:'260px',
+  padding:'7px 10px', borderRadius:'6px', fontSize:'12px', lineHeight:'1.45',
+  maxWidth:'260px',
 });
 document.body.appendChild(tip);
 function bindTip(el, html) {
@@ -189,7 +189,7 @@ function moveTip(e) {
 // Componentes reutilizables
 // ---------------------------------------------------------------------------
 function kpi({ label, value, unit, foot, accent, spark, hint }) {
-  return `<div class="kpi" style="--accent:${accent || 'var(--brand)'}">
+  return `<div class="kpi" style="--accent:${accent || 'transparent'}">
     <div class="kpi-label">${esc(label)}${hint ? ` <span title="${esc(hint)}" style="cursor:help;opacity:.6">ⓘ</span>` : ''}</div>
     <div class="kpi-value">${value}${unit ? `<span class="unit">${unit}</span>` : ''}</div>
     <div class="kpi-foot">${foot || ''}</div>
@@ -367,7 +367,7 @@ function syncSlicerButtons() {
       const f = S.filters.dt, on = !!(f.from || f.to);
       btn.classList.toggle('active', on);
       btn.innerHTML = on
-        ? `${dmyShort(f.from || S.dates[0])}–${dmyShort(f.to || S.dates[S.dates.length-1])} <span class="caret">▼</span>`
+        ? `${dmyShort(f.from || S.dates[0])}-${dmyShort(f.to || S.dates[S.dates.length-1])} <span class="caret">▼</span>`
         : `Fechas <span class="caret">▼</span>`;
       return;
     }
@@ -387,7 +387,7 @@ function syncSlicerButtons() {
   const banner = document.getElementById('filter-banner');
   banner.classList.toggle('show', parts.length > 0);
   banner.innerHTML = parts.length
-    ? `<span>⛃</span> Vista filtrada por ${parts.join(' · ')} — <b>${n(S.view.length)}</b> de ${n(S.trips.length)} viajes`
+    ? `Vista filtrada por ${parts.join(', ')}: <b>${n(S.view.length)}</b> de ${n(S.trips.length)} viajes`
     : '';
 }
 
@@ -449,18 +449,13 @@ function pageOverview() {
      Todo lo que sigue responde a los filtros de la barra superior.`;
 
   document.getElementById('ov-kpis').innerHTML = [
-    kpi({ label:'Viajes registrados', value:n(m.trips), accent:'var(--series-1)',
-          foot:`<span class="pill">${n(m.billed)} facturados</span>`, spark:'sp-trips' }),
-    kpi({ label:'Ingresos', value:n(m.revenue), unit:'€', accent:'var(--series-3)',
-          foot:`Ticket medio ${eur2(m.avgTicket)}`, spark:'sp-rev' }),
-    kpi({ label:'Tasa de finalización', value:pct(m.completion), accent:'var(--series-6)',
-          foot:'Viajes que acaban en destino',
+    kpi({ label:'Viajes registrados', value:n(m.trips), foot:`<span class="pill">${n(m.billed)} facturados</span>`, spark:'sp-trips' }),
+    kpi({ label:'Ingresos', value:n(m.revenue), unit:'€', foot:`Ticket medio ${eur2(m.avgTicket)}`, spark:'sp-rev' }),
+    kpi({ label:'Tasa de finalización', value:pct(m.completion), foot:'Viajes que acaban en destino',
           hint:'Porcentaje de viajes cuyo motivo de cierre es drop_off' }),
-    kpi({ label:'Espera media', value:n1(m.avgWait), unit:'min', accent:'var(--series-4)',
-          foot:`Trayecto ${n1(m.avgEff)} min`,
+    kpi({ label:'Espera media', value:n1(m.avgWait), unit:'min', foot:`Trayecto ${n1(m.avgEff)} min`,
           hint:'Derivada de las diferencias entre eventos, no medida directamente' }),
-    kpi({ label:'Cobertura', value:`${m.countries}`, unit:`países`, accent:'var(--series-7)',
-          foot:`${n(m.cities)} áreas urbanas · ${n(m.drivers)} conductores` }),
+    kpi({ label:'Cobertura', value:`${m.countries}`, unit:`países`, foot:`${n(m.cities)} áreas urbanas · ${n(m.drivers)} conductores` }),
   ].join('');
 
   const spark = (id, vals, color) => plot(id,
@@ -514,7 +509,7 @@ function pageOverview() {
   const peak = daily.reduce((a, b) => b.trips > a.trips ? b : a, daily[0] || { trips:0 });
   setInsight('ov-insight-time',
     daily.length ? `El pico de actividad se registró el <b>${dmy(peak.date)}</b> con <b>${n(peak.trips)}</b> viajes.
-      La serie es corta —<b>${daily.filter(d => d.trips > 0).length} días con actividad</b>— y con un panel de
+      La serie es corta (<b>${daily.filter(d => d.trips > 0).length} días con actividad</b>) y con un panel de
       usuarios cerrado, así que las oscilaciones diarias reflejan más el comportamiento de una muestra pequeña
       que un ciclo de mercado. Cualquier lectura de tendencia sobre este periodo sería prematura.`
       : 'Sin datos en el rango seleccionado.');
@@ -554,15 +549,12 @@ function pageRevenue() {
   const rows = S.view, bill = rows.filter(billed), m = metrics(rows);
 
   document.getElementById('rv-kpis').innerHTML = [
-    kpi({ label:'Ingresos totales', value:n(m.revenue), unit:'€', accent:'var(--series-3)',
-          foot:`sobre ${n(m.billed)} viajes facturados` }),
-    kpi({ label:'Ticket medio', value:n2(m.avgTicket), unit:'€', accent:'var(--series-1)',
-          foot:`Mediana ${eur2(m.medTicket)}` }),
-    kpi({ label:'Ingreso por minuto', value:n2(m.revPerMin), unit:'€/min', accent:'var(--series-4)',
-          foot:'sobre el tiempo efectivo de trayecto' }),
+    kpi({ label:'Ingresos totales', value:n(m.revenue), unit:'€', foot:`sobre ${n(m.billed)} viajes facturados` }),
+    kpi({ label:'Ticket medio', value:n2(m.avgTicket), unit:'€', foot:`Mediana ${eur2(m.medTicket)}` }),
+    kpi({ label:'Ingreso por minuto', value:n2(m.revPerMin), unit:'€/min', foot:'sobre el tiempo efectivo de trayecto' }),
     kpi({ label:'Ingreso por kilómetro', value:n2((() => {
             const k = sum(bill, t => t.km || 0); return k > 0 ? sum(bill, t => t.p) / k : null; })()),
-          unit:'€/km', accent:'var(--series-7)', foot:'distancia en línea recta',
+          unit:'€/km', foot:'distancia en línea recta',
           hint:'La distancia es geodésica, no por carretera: el valor real por km recorrido será menor.' }),
   ].join('');
 
@@ -576,7 +568,7 @@ function pageRevenue() {
     y: c.v.map(t => t.pl).filter(x => x != null), name: cname(c.k === '__null' ? null : c.k),
     type:'box', boxpoints:false, marker:{ color: series(i) }, line:{ width:1.6 },
     fillcolor: alpha(series(i), .22),
-    hovertemplate:`${cname(c.k)} (${c.v[0].cur || '—'})<br>mediana %{median:,.0f}<extra></extra>`,
+    hovertemplate:`${cname(c.k)} (${c.v[0].cur || '-'})<br>mediana %{median:,.0f}<extra></extra>`,
   })), { yaxis:{ type:'log', title:{ text:'unidades de divisa local (log)', font:{size:11} } },
          xaxis:{ tickangle:-25 }, margin:{ l:66, r:10, t:10, b:66 } });
 
@@ -594,7 +586,7 @@ function pageRevenue() {
     ? `En divisa local la mediana va de <b>${n(lo.med)}</b> unidades en ${cname(lo.k)} a <b>${n(hi.med)}</b> en
        ${cname(hi.k)}: una diferencia de <b>${n1(hi.med/lo.med)}×</b> que no dice nada sobre el precio real,
        solo sobre la denominación de cada moneda. Convertidos a euros las medianas se comprimen a un rango
-       de <b>${eur2(Math.min(...countries.map(c => median(c.v.map(t => t.p)))))}</b>–<b>${eur2(Math.max(...countries.map(c => median(c.v.map(t => t.p)))))}</b>,
+       de <b>${eur2(Math.min(...countries.map(c => median(c.v.map(t => t.p)))))}</b> a <b>${eur2(Math.max(...countries.map(c => median(c.v.map(t => t.p)))))}</b>,
        que ya es una comparación honesta. Este es el motivo de que la conversión de divisa esté en el modelo
        y no en el informe.`
     : 'Selecciona más de un mercado para comparar divisas.');
@@ -660,7 +652,7 @@ function pageRevenue() {
     ? `El ingreso por minuto separa mejor los mercados que el ticket: <b>${cname(best.k)}</b> factura
        <b>${n2(best.rpm)} €</b> por minuto de trayecto, frente a <b>${n2(rpm[rpm.length-1].rpm)} €</b> del
        último de la lista. La nube de puntos muestra por qué: el precio crece con la duración, pero con una
-       dispersión amplia — hay viajes largos y baratos y viajes cortos y caros, lo que sugiere que la tarifa
+       dispersión amplia: hay viajes largos y baratos y viajes cortos y caros, lo que sugiere que la tarifa
        combina tiempo, distancia y suplementos que este dataset no desglosa.`
     : 'Sin datos.');
 
@@ -694,12 +686,10 @@ function pageDemand() {
   const wkndShare  = 100 * rows.filter(t => t.wd >= 6).length / Math.max(1, rows.length);
 
   document.getElementById('dm-kpis').innerHTML = [
-    kpi({ label:'Hora punta', value:`${String(peakH.h).padStart(2,'0')}:00`, accent:'var(--series-1)',
-          foot:`${n(peakH.n)} viajes · ${pct(100*peakH.n/Math.max(1,rows.length))} del total` }),
-    kpi({ label:'Demanda nocturna', value:pct(nightShare), accent:'var(--series-7)', foot:'entre las 00:00 y las 06:00' }),
-    kpi({ label:'Peso del fin de semana', value:pct(wkndShare), accent:'var(--series-5)', foot:'sábados y domingos' }),
-    kpi({ label:'Espera media', value:n1(m.avgWait), unit:'min', accent:'var(--series-4)',
-          foot:`vs. ${n1(m.avgEff)} min de trayecto` }),
+    kpi({ label:'Hora punta', value:`${String(peakH.h).padStart(2,'0')}:00`, foot:`${n(peakH.n)} viajes · ${pct(100*peakH.n/Math.max(1,rows.length))} del total` }),
+    kpi({ label:'Demanda nocturna', value:pct(nightShare), foot:'entre las 00:00 y las 06:00' }),
+    kpi({ label:'Peso del fin de semana', value:pct(wkndShare), foot:'sábados y domingos' }),
+    kpi({ label:'Espera media', value:n1(m.avgWait), unit:'min', foot:`vs. ${n1(m.avgEff)} min de trayecto` }),
   ].join('');
 
   document.getElementById('dm-hm-sub').textContent =
@@ -724,7 +714,7 @@ function pageDemand() {
     if (tot > bestWin.n) bestWin = { start:h, n:tot };
   }
   setInsight('dm-insight-hm', rows.length
-    ? `La franja más intensa es <b>${String(bestWin.start).padStart(2,'0')}:00–${String((bestWin.start+3)%24).padStart(2,'0')}:00</b>,
+    ? `La franja más intensa es <b>${String(bestWin.start).padStart(2,'0')}:00-${String((bestWin.start+3)%24).padStart(2,'0')}:00</b>,
        que concentra el <b>${pct(100*bestWin.n/rows.length)}</b> de la demanda en solo el 12,5 % de las horas del día.
        El fin de semana aporta el <b>${pct(wkndShare)}</b> del volumen frente al 28,6 % que le correspondería
        por reparto uniforme, así que ${wkndShare > 28.6 ? 'la demanda se inclina hacia el ocio de fin de semana' : 'el uso es predominantemente laboral, entre semana'}.
@@ -762,7 +752,7 @@ function pageDemand() {
        xaxis:{ dtick:2, title:{ text:'hora local', font:{size:11} } },
        yaxis:{ ticksuffix:' min' }, margin:{ l:56, r:12, t:28, b:42 } });
 
-  const buckets = [['<5 min',0,5],['5–10 min',5,10],['10–20 min',10,20],['20–40 min',20,40],['40+ min',40,Infinity]];
+  const buckets = [['<5 min',0,5],['5-10 min',5,10],['10-20 min',10,20],['20-40 min',20,40],['40+ min',40,Infinity]];
   const bvals = buckets.map(([, a, b]) => rows.filter(t => t.eff != null && t.eff >= a && t.eff < b).length);
   plot('dm-duration', [{
     x: buckets.map(b => b[0]), y: bvals, type:'bar',
@@ -828,21 +818,39 @@ function pointAgg(rows, which, dec = 3) {
   }
   return [...m.values()].sort((a, b) => b.n - a.n);
 }
+// Cartografia base: Esri Gray Canvas. Sustituye a CARTO, que desde 2024 estampa
+// una marca de agua «API KEY REQUIRED» sobre cada tesela servida sin credencial.
+// Esri sirve las teselas sin clave y tiene variante clara y oscura nativas, asi
+// que el mapa base no necesita ningun filtro CSS para acompanar al tema.
+//
+// El lienzo va sin rotulos y los topónimos llegan en una capa aparte: asi el
+// unico color saturado del mapa es el del dato.
+const ESRI = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas';
 function tileUrl() {
   return isDark()
-    ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-    : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+    ? `${ESRI}/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}`
+    : `${ESRI}/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}`;
+}
+function labelUrl() {
+  return isDark()
+    ? `${ESRI}/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}`
+    : `${ESRI}/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}`;
+}
+// Rampa del mapa de calor: verde (poco transitado) a rojo (con trafico).
+function heatGradient() {
+  return { 0.15: css('--heat-0'), 0.40: css('--heat-1'), 0.62: css('--heat-2'),
+           0.82: css('--heat-3'), 1.00: css('--heat-4') };
 }
 function ensureMap(id) {
   if (S.maps[id]) return S.maps[id];
   const map = L.map(id, { scrollWheelZoom:true, zoomControl:true, attributionControl:true, worldCopyJump:true })
                .setView([10, -40], 2);
-  const tiles = L.tileLayer(tileUrl(), {
-    attribution:'© OpenStreetMap · © CARTO', subdomains:'abcd', maxZoom:19,
-  }).addTo(map);
+  const tileOpts = { attribution:'Esri, HERE, Garmin, © OpenStreetMap', maxZoom:19, maxNativeZoom:16 };
+  const tiles  = L.tileLayer(tileUrl(),  tileOpts).addTo(map);
+  const labels = L.tileLayer(labelUrl(), { ...tileOpts, pane:'shadowPane' }).addTo(map);
   const groups = { routes:L.layerGroup().addTo(map), pickup:L.layerGroup().addTo(map),
                    dropoff:L.layerGroup().addTo(map), heat:L.layerGroup().addTo(map) };
-  S.maps[id] = { map, tiles, groups };
+  S.maps[id] = { map, tiles, labels, groups };
   return S.maps[id];
 }
 
@@ -855,9 +863,9 @@ function pageGeo() {
   const cities = [...groupBy(rows, t => t.city)].filter(([, v]) => v.length >= 5).sort((a,b) => b[1].length - a[1].length);
   const prev = S.geo.scope;
   sel.innerHTML =
-    `<option value="ALL">🌍 Vista global — ${n(rows.length)} viajes</option>` +
-    `<optgroup label="Países">${countries.map(([k, v]) => `<option value="C:${esc(k)}">${cflag(k === '__null' ? null : k)} — ${n(v.length)}</option>`).join('')}</optgroup>` +
-    `<optgroup label="Áreas urbanas">${cities.map(([k, v]) => `<option value="T:${esc(k)}">${esc(k)} — ${n(v.length)}</option>`).join('')}</optgroup>`;
+    `<option value="ALL">Vista global, ${n(rows.length)} viajes</option>` +
+    `<optgroup label="Países">${countries.map(([k, v]) => `<option value="C:${esc(k)}">${cflag(k === '__null' ? null : k)}, ${n(v.length)}</option>`).join('')}</optgroup>` +
+    `<optgroup label="Áreas urbanas">${cities.map(([k, v]) => `<option value="T:${esc(k)}">${esc(k)}, ${n(v.length)}</option>`).join('')}</optgroup>`;
   sel.value = [...sel.options].some(o => o.value === prev) ? prev : 'ALL';
   S.geo.scope = sel.value;
 
@@ -914,11 +922,17 @@ function drawGeo() {
       fillColor: css('--series-3'), fillOpacity: .9,
     }).bindTooltip(`<b>Recogidas</b><br>${esc(p.city)}<br>${n(p.n)} viajes`, { sticky:true }).addTo(groups.pickup));
   }
+  document.getElementById('geo-legend')?.classList.toggle('heat-on', !!S.geo.layers.heat);
   if (S.geo.layers.heat && typeof L.heatLayer === 'function') {
-    const pts = rows.flatMap(t => [[t.slat, t.slon, 0.7], [t.elat, t.elon, 0.7]]);
+    const pts = rows.flatMap(t => [[t.slat, t.slon, 1], [t.elat, t.elon, 1]]);
+    // `max` es el numero de puntos que saturan una celda de la retícula interna
+    // del plugin. Con el valor por defecto (1) cualquier solape llegaba al tope
+    // de la rampa y el mapa entero salia del mismo color; escalarlo con el
+    // volumen visible es lo que devuelve el degradado.
+    const heatMax = Math.max(3, Math.round(Math.sqrt(pts.length) / (global ? 6 : 4)));
     if (pts.length) groups.heat.addLayer(L.heatLayer(pts, {
-      radius: global ? 12 : 22, blur: global ? 14 : 22, minOpacity: .25,
-      gradient: { 0.2: css('--seq-200'), 0.5: css('--seq-400'), 0.8: css('--seq-600'), 1: css('--seq-700') },
+      radius: global ? 14 : 26, blur: global ? 11 : 18, minOpacity: .45, max: heatMax,
+      gradient: heatGradient(),
     }));
   }
 
@@ -933,7 +947,7 @@ function drawGeo() {
     { h:'#', f:(_,i) => `<span class="rank">${i+1}</span>`, cls:'rank' },
     { h:'Corredor', f:r =>
         `${cdot(r.c)}${esc(r.city)}${r.city === r.cityEnd ? ' <span style="color:var(--text-muted)">(interno)</span>' : ' → ' + esc(r.cityEnd)}` +
-        `<div class="mono" style="font-size:10.5px;color:var(--text-muted);margin-top:1px">` +
+        `<div class="mono" style="font-size:var(--t-micro);color:var(--text-muted);margin-top:1px">` +
         `${n2(r.slat)}, ${n2(r.slon)} → ${n2(r.elat)}, ${n2(r.elon)}</div>` },
     { h:'Viajes', num:true, f:r => barCell(r.n, top[0]?.n || 1, n(r.n)) },
     { h:'km', num:true, f:r => n1(mean(r.km)) },
@@ -971,8 +985,8 @@ function drawGeo() {
        ${sameCell
          ? 'el mismo punto genera y absorbe demanda, lo que suele indicar un intercambiador o un centro de actividad.'
          : `la celda que más recogidas concentra (<span class="mono">${n2(pick[0]?.lat)}, ${n2(pick[0]?.lon)}</span>
-            en ${esc(pick[0]?.city || '—')}, ${n(pick[0]?.n || 0)} viajes) no es la que más dejadas recibe
-            (<span class="mono">${n2(drop[0]?.lat)}, ${n2(drop[0]?.lon)}</span> en ${esc(drop[0]?.city || '—')},
+            en ${esc(pick[0]?.city || '-')}, ${n(pick[0]?.n || 0)} viajes) no es la que más dejadas recibe
+            (<span class="mono">${n2(drop[0]?.lat)}, ${n2(drop[0]?.lon)}</span> en ${esc(drop[0]?.city || '-')},
             ${n(drop[0]?.n || 0)}). Esa asimetría entre dónde empieza y dónde acaba la demanda es la que genera
             reposicionamiento en vacío y encarece la operación.`}`
     : 'Sin viajes geolocalizados en la selección.');
@@ -1005,8 +1019,8 @@ function drawGeo() {
   const fast = spd.filter(x => x.kmh != null).sort((a,b) => b.kmh - a.kmh)[0];
   setInsight('geo-insight-speed', slow && fast
     ? `La velocidad implícita va de <b>${n1(slow.kmh)} km/h</b> en ${cname(slow.k)} a <b>${n1(fast.kmh)} km/h</b>
-       en ${cname(fast.k)}. Al calcularse sobre distancia geodésica, infravalora la velocidad real —el recorrido
-       por calle siempre es más largo que la línea recta—, así que léase como un índice de congestión relativa
+       en ${cname(fast.k)}. Al calcularse sobre distancia geodésica, infravalora la velocidad real (el recorrido
+       por calle siempre es más largo que la línea recta), así que léase como un índice de congestión relativa
        entre mercados, no como una medida de tráfico.`
     : 'Sin datos suficientes para estimar velocidades.');
 }
@@ -1026,15 +1040,12 @@ function pageOps() {
   const multi = rows.filter(t => (t.nd || 0) > 1).length;
 
   document.getElementById('op-kpis').innerHTML = [
-    kpi({ label:'Conductores activos', value:n(drivers.length), accent:'var(--series-1)',
-          foot:`de ${n(S.meta.drivers_total)} en el catálogo` }),
-    kpi({ label:'Viajes por conductor', value:n1(rows.length / Math.max(1, drivers.length)), accent:'var(--series-3)',
-          foot:`mediana ${n(median(drivers.map(d => d.n)))} viajes` }),
-    kpi({ label:'Conductores por viaje', value:n2(mean(reassign)), accent:'var(--series-2)',
-          foot:`${pct(100*multi/Math.max(1,rows.length))} implican a más de uno`,
+    kpi({ label:'Conductores activos', value:n(drivers.length), foot:`de ${n(S.meta.drivers_total)} en el catálogo` }),
+    kpi({ label:'Viajes por conductor', value:n1(rows.length / Math.max(1, drivers.length)), foot:`mediana ${n(median(drivers.map(d => d.n)))} viajes` }),
+    kpi({ label:'Conductores por viaje', value:n2(mean(reassign)), foot:`${pct(100*multi/Math.max(1,rows.length))} implican a más de uno`,
           hint:'Conductores distintos que llegan a asignarse a un viaje, sin contar el placeholder del sistema. Es menor que 1 porque algunos viajes no llegan a tener conductor.' }),
     kpi({ label:'Ingreso medio por conductor', value:n2(drivers.length ? sum(drivers, d => d.rev)/drivers.length : null),
-          unit:'€', accent:'var(--series-4)', foot:'en las cinco semanas' }),
+          unit:'€', foot:'en las cinco semanas' }),
   ].join('');
 
   const maxNd = Math.min(6, Math.max(...reassign, 1));
@@ -1170,16 +1181,12 @@ function pageFunnel() {
   const avgDone = mean(rows.filter(t => t.r === 'drop_off' && t.p != null), t => t.p);
 
   document.getElementById('fn-kpis').innerHTML = [
-    kpi({ label:'Tasa de finalización', value:pct(100*done/Math.max(1,rows.length)), accent:'var(--series-6)',
-          foot:`${n(done)} de ${n(rows.length)} viajes` }),
-    kpi({ label:'Viajes no completados', value:n(cancels), accent:'var(--series-8)',
-          foot:pct(100*cancels/Math.max(1,rows.length)) + ' del total' }),
-    kpi({ label:'Ingreso no realizado', value:n(cancels * (avgDone || 0)), unit:'€', accent:'var(--series-2)',
-          foot:'estimado al ticket medio del viaje completado',
+    kpi({ label:'Tasa de finalización', value:pct(100*done/Math.max(1,rows.length)), foot:`${n(done)} de ${n(rows.length)} viajes` }),
+    kpi({ label:'Viajes no completados', value:n(cancels), foot:pct(100*cancels/Math.max(1,rows.length)) + ' del total' }),
+    kpi({ label:'Ingreso no realizado', value:n(cancels * (avgDone || 0)), unit:'€', foot:'estimado al ticket medio del viaje completado',
           hint:'Estimación teórica: nº de viajes caídos × ticket medio de un viaje completado' }),
     kpi({ label:'Espera antes de caerse', value:n1(mean(rows.filter(t => t.r && t.r !== 'drop_off' && t.wait != null), t => t.wait)),
-          unit:'min', accent:'var(--series-4)',
-          foot:`vs. ${n1(mean(rows.filter(t => t.r === 'drop_off' && t.wait != null), t => t.wait))} min si se completa` }),
+          unit:'min', foot:`vs. ${n1(mean(rows.filter(t => t.r === 'drop_off' && t.wait != null), t => t.wait))} min si se completa` }),
   ].join('');
 
   plot('fn-reasons', [{
@@ -1250,10 +1257,10 @@ function pageFunnel() {
        <b>${pct(worstC.rate)}</b> en ${cname(worstC.k)}: <b>${n1(bestC.rate - worstC.rate)} puntos</b> de diferencia
        entre mercados que operan el mismo producto.
        ${worstH ? `Por horas, la peor franja son las <b>${String(worstH.h).padStart(2,'0')}:00</b>, con solo
-       ${pct(worstH.rate)} de viajes completados — el momento donde la oferta de conductores no cubre la demanda.` : ''}`
+       ${pct(worstH.rate)} de viajes completados: el momento donde la oferta de conductores no cubre la demanda.` : ''}`
     : 'Sin datos suficientes por mercado.');
 
-  const wb = [['0–2 min',0,2],['2–5 min',2,5],['5–10 min',5,10],['10–20 min',10,20],['20+ min',20,Infinity]];
+  const wb = [['0-2 min',0,2],['2-5 min',2,5],['5-10 min',5,10],['10-20 min',10,20],['20+ min',20,Infinity]];
   plot('fn-wait', reasons.map(k => ({
     x: wb.map(b => b[0]),
     y: wb.map(([, a, b]) => {
@@ -1272,8 +1279,8 @@ function pageFunnel() {
     ? `Con menos de 5 minutos de espera, el <b>${pct(100*w1.filter(t => t.r === 'drop_off').length/w1.length)}</b>
        de los viajes acaba en destino. Pasados los 20 minutos, la cifra es del
        <b>${pct(100*w2.filter(t => t.r === 'drop_off').length/w2.length)}</b>.
-       Ojo con la causalidad: parte de esa relación es mecánica —un viaje que nunca encuentra conductor acumula
-       espera por definición—, así que el gráfico describe la anatomía de un viaje fallido más que un umbral de
+       Ojo con la causalidad: parte de esa relación es mecánica (un viaje que nunca encuentra conductor acumula
+       espera por definición), así que el gráfico describe la anatomía de un viaje fallido más que un umbral de
        paciencia del usuario.`
     : 'Sin datos suficientes de espera.');
 }
@@ -1292,14 +1299,10 @@ function pageUsers() {
   })).sort((a,b) => b.spent - a.spent);
 
   document.getElementById('us-kpis').innerHTML = [
-    kpi({ label:'Usuarios activos', value:n(users.length), accent:'var(--series-1)',
-          foot:`de ${n(sum(S.meta.users_by_country || [], u => u.users))} registrados` }),
-    kpi({ label:'Viajes por usuario', value:n1(rows.length / Math.max(1, users.length)), accent:'var(--series-3)',
-          foot:`mediana ${n(median(users.map(u => u.n)))}` }),
-    kpi({ label:'Gasto medio', value:n2(mean(users, u => u.spent)), unit:'€', accent:'var(--series-4)',
-          foot:`mediana ${eur2(median(users.map(u => u.spent)))}` }),
-    kpi({ label:'Días activos', value:n1(mean(users, u => u.days)), accent:'var(--series-7)',
-          foot:`sobre ${S.dates.length} días del periodo` }),
+    kpi({ label:'Usuarios activos', value:n(users.length), foot:`de ${n(sum(S.meta.users_by_country || [], u => u.users))} registrados` }),
+    kpi({ label:'Viajes por usuario', value:n1(rows.length / Math.max(1, users.length)), foot:`mediana ${n(median(users.map(u => u.n)))}` }),
+    kpi({ label:'Gasto medio', value:n2(mean(users, u => u.spent)), unit:'€', foot:`mediana ${eur2(median(users.map(u => u.spent)))}` }),
+    kpi({ label:'Días activos', value:n1(mean(users, u => u.days)), foot:`sobre ${S.dates.length} días del periodo` }),
   ].join('');
 
   const freq = users.map(u => u.n);
@@ -1367,7 +1370,7 @@ function pageUsers() {
     { h:'#', f:(_,i) => `<span class="rank">${i+1}</span>`, cls:'rank' },
     { h:'Usuario', cls:'mono', f:r => esc(r.id.slice(0, 12)) + '…' },
     { h:'Mercado', f:r => cbadge(r.c) },
-    { h:'Zona principal', f:r => esc(r.city || '—') },
+    { h:'Zona principal', f:r => esc(r.city || '-') },
     { h:'Viajes', num:true, f:r => n(r.n) },
     { h:'Completados', num:true, f:r => `${n(r.done)} <span style="color:var(--text-muted)">(${n1(100*r.done/r.n)} %)</span>` },
     { h:'Días activos', num:true, f:r => n(r.days) },
@@ -1386,12 +1389,10 @@ function pageQuality() {
   const reduction = f.raw_rows ? 100 * (1 - f.fact_trips / f.raw_rows) : null;
 
   document.getElementById('dq-kpis').innerHTML = [
-    kpi({ label:'Filas en el origen', value:n(f.raw_rows), accent:'var(--series-4)',
-          foot:`para solo ${n(f.raw_trips)} viajes distintos` }),
-    kpi({ label:'Reducción del ruido', value:pct(reduction), accent:'var(--series-3)',
-          foot:`${n(f.raw_rows)} → ${n(f.fact_trips)} filas útiles` }),
+    kpi({ label:'Filas en el origen', value:n(f.raw_rows), foot:`para solo ${n(f.raw_trips)} viajes distintos` }),
+    kpi({ label:'Reducción del ruido', value:pct(reduction), foot:`${n(f.raw_rows)} → ${n(f.fact_trips)} filas útiles` }),
     kpi({ label:'Viajes con precio', value:pct(f.trips_with_price != null ? 100*f.trips_with_price/Math.max(1,f.fact_trips) : null),
-          accent:'var(--series-1)', foot:`${n(f.trips_with_price)} de ${n(f.fact_trips)}` }),
+          foot:`${n(f.trips_with_price)} de ${n(f.fact_trips)}` }),
     kpi({ label:'Vehículos con dimensión', value:pct(carCov ? 100*carCov.con_dimension/Math.max(1,carCov.en_viajes) : null),
           accent:'var(--critical)', foot:`${n(carCov?.con_dimension)} de ${n(carCov?.en_viajes)} IDs`,
           hint:'El hallazgo más limitante del dataset: la mayoría de los coches referenciados en viajes no existe en cars.json' }),
@@ -1402,15 +1403,15 @@ function pageQuality() {
   // misma barra sugeriría una pérdida de datos que no existe.
   const blocks = [
     { title:'Reducción de filas', unit:'filas', steps:[
-      { l:'Filas en <code class="i">raw.trip</code>', s:'Un evento de estado por fila', v:f.raw_rows, c:'--series-4' },
-      { l:'Filas conservadas en staging', s:'Primera + cambios de conductor + cierre', v:f.staging_rows, c:'--series-2' },
-      { l:'Viajes en <code class="i">fact__trips</code>', s:'Una fila por viaje tras colapsar', v:f.fact_trips, c:'--series-1' },
+      { l:'Filas en <code class="i">raw.trip</code>', s:'Un evento de estado por fila', v:f.raw_rows, c:'--seq-300' },
+      { l:'Filas conservadas en staging', s:'Primera + cambios de conductor + cierre', v:f.staging_rows, c:'--seq-500' },
+      { l:'Viajes en <code class="i">fact__trips</code>', s:'Una fila por viaje tras colapsar', v:f.fact_trips, c:'--seq-700' },
     ]},
     { title:'Cobertura de los viajes', unit:'viajes', steps:[
-      { l:'Viajes distintos en el origen', s:'<code class="i">COUNT(DISTINCT trip_id)</code>', v:f.raw_trips, c:'--series-1' },
-      { l:'Con geometría completa', s:'Exactamente dos paradas', v:f.staging_trips, c:'--series-7' },
-      { l:'Con desenlace registrado', s:'<code class="i">reason</code> informado', v:f.trips_with_reason, c:'--series-3' },
-      { l:'Facturados', s:'<code class="i">price</code> válido', v:f.trips_with_price, c:'--series-6' },
+      { l:'Viajes distintos en el origen', s:'<code class="i">COUNT(DISTINCT trip_id)</code>', v:f.raw_trips, c:'--seq-200' },
+      { l:'Con geometría completa', s:'Exactamente dos paradas', v:f.staging_trips, c:'--seq-400' },
+      { l:'Con desenlace registrado', s:'<code class="i">reason</code> informado', v:f.trips_with_reason, c:'--seq-500' },
+      { l:'Facturados', s:'<code class="i">price</code> válido', v:f.trips_with_price, c:'--seq-600' },
     ]},
   ];
   const ft = document.getElementById('dq-funnel-title');
@@ -1418,7 +1419,7 @@ function pageQuality() {
   document.getElementById('dq-funnel').innerHTML = blocks.map((b, bi) => {
     const base = b.steps[0].v || 1;
     return `${bi ? '<div style="height:14px"></div>' : ''}
-      <div style="font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted);font-weight:650;margin-bottom:6px">${b.title} <span style="opacity:.7">· escala en ${b.unit}</span></div>` +
+      <div style="font-family:var(--font-mono);font-size:var(--t-micro);letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px">${b.title} <span style="opacity:.7">· escala en ${b.unit}</span></div>` +
       b.steps.map((s, i) => `
         <div class="funnel-row">
           <div class="funnel-label"><b>${s.l}</b>${s.s}</div>
@@ -1430,8 +1431,8 @@ function pageQuality() {
   setInsight('dq-insight-funnel',
     `La tabla de origen tiene <b>${n(f.raw_rows)}</b> filas y <b>${n(f.raw_trips)}</b> viajes: una media de
      <b>${n1(f.raw_rows/Math.max(1,f.raw_trips))}</b> filas por viaje. Casi todas son actualizaciones redundantes
-     del mismo estado. Al conservar solo las filas con significado —la primera, los cambios de conductor o
-     vehículo y el cierre— quedan <b>${n(f.staging_rows)}</b>, y al colapsar a un viaje por fila,
+     del mismo estado. Al conservar solo las filas con significado (la primera, los cambios de conductor o
+     vehículo y el cierre) quedan <b>${n(f.staging_rows)}</b>, y al colapsar a un viaje por fila,
      <b>${n(f.fact_trips)}</b>. Es una reducción del <b>${pct(reduction)}</b> <em>sin perder ningún evento
      relevante para negocio</em>: el conductor final, el precio y el motivo de cierre siguen ahí.`);
 
@@ -1478,11 +1479,11 @@ updated_at (UTC)   driver           reason     price
 
   const rn = m.raw_nulls || {};
   document.getElementById('dq-placeholder').innerHTML = `
-    <p style="font-size:13.4px;color:var(--text-secondary)">
+    <p style="font-size:var(--t-sm);color:var(--text-secondary)">
       El identificador <code class="i">${esc(m.placeholder_id || '')}</code> aparece
       <b>${n(rn.driver_placeholder)}</b> veces como conductor y <b>${n(rn.car_placeholder)}</b> como vehículo,
       pero no existe en <code class="i">drivers.json</code> ni en <code class="i">cars.json</code>.</p>
-    <p style="font-size:13.4px;color:var(--text-secondary);margin-top:9px">
+    <p style="font-size:var(--t-sm);color:var(--text-secondary);margin-top:9px">
       No es un fallo de datos: es el <b>hash MD5 de la cadena vacía</b> codificado en base64. El sistema lo emite
       cuando el campo va vacío, es decir, mientras el viaje aún no tiene conductor asignado.
       Reconocerlo cambia la lectura: esas filas no son «conductores fantasma», son
@@ -1527,8 +1528,8 @@ updated_at (UTC)   driver           reason     price
   setInsight('dq-insight-stops', ok
     ? `El <b>${n2(100*ok.trips/totStops)} %</b> de los viajes trae exactamente dos paradas: origen y destino.
        Los <b>${n(totStops - ok.trips)}</b> restantes (con cero, una o tres) se quedan en la capa
-       <code class="i">raw</code> —el origen se preserva íntegro— pero no entran en la tabla de hechos: sin par
-       origen–destino no se puede calcular ruta ni distancia sin inventar el dato que falta.`
+       <code class="i">raw</code> (el origen se preserva íntegro) pero no entran en la tabla de hechos: sin par
+       origen-destino no se puede calcular ruta ni distancia sin inventar el dato que falta.`
     : 'Sin datos de geometría.');
 
   // El extracto trae las tablas sin un orden útil. Se ordenan por entidad y,
@@ -1559,22 +1560,22 @@ updated_at (UTC)   driver           reason     price
 function pageMethod() {
   const lay = S.meta.layers || [];
   const info = [
-    { k:'raw', t:'Ingesta', d:'Los JSON tal y como llegan, sin transformar. Preserva el origen íntegro y hace auditable todo lo que viene después.', c:'--series-4' },
-    { k:'staging', t:'Limpieza', d:`Renombrado, deduplicación y la reducción de eventos a las filas con significado. Aquí vive la lógica que colapsa las ${n(S.meta.funnel?.raw_rows)} filas del origen.`, c:'--series-2' },
-    { k:'core', t:'Modelo de negocio', d:'Esquema en estrella: una tabla de hechos de viajes y tres dimensiones con histórico (SCD tipo 2).', c:'--series-1' },
-    { k:'analytics', t:'Agregados', d:'Vistas SQL con los KPIs ya calculados, listas para consumir desde un BI o desde este informe.', c:'--series-3' },
+    { k:'raw', t:'Ingesta', d:'Los JSON tal y como llegan, sin transformar. Preserva el origen íntegro y hace auditable todo lo que viene después.', c:'--seq-200' },
+    { k:'staging', t:'Limpieza', d:`Renombrado, deduplicación y la reducción de eventos a las filas con significado. Aquí vive la lógica que colapsa las ${n(S.meta.funnel?.raw_rows)} filas del origen.`, c:'--seq-400' },
+    { k:'core', t:'Modelo de negocio', d:'Esquema en estrella: una tabla de hechos de viajes y tres dimensiones con histórico (SCD tipo 2).', c:'--seq-500' },
+    { k:'analytics', t:'Agregados', d:'Vistas SQL con los KPIs ya calculados, listas para consumir desde un BI o desde este informe.', c:'--seq-600' },
   ];
   document.getElementById('mt-layers').innerHTML = info.map(i => {
     const tabs = lay.filter(l => l.tabla.startsWith(i.k + '.'));
-    return `<div class="card" style="border-top:3px solid var(${i.c})">
+    return `<div class="card" style="border-top:2px solid var(${i.c})">
       <div class="card-head"><div class="card-title"><code class="i">${i.k}</code></div>
         <div class="card-tag">${i.t}</div></div>
-      <p style="font-size:13.2px;color:var(--text-secondary);margin:6px 0 10px">${i.d}</p>
-      ${tabs.length ? `<div style="font-size:12.3px;color:var(--text-muted)">
+      <p style="font-size:var(--t-sm);color:var(--text-secondary);margin:6px 0 10px">${i.d}</p>
+      ${tabs.length ? `<div style="font-size:var(--t-xs);color:var(--text-muted)">
         ${tabs.map(t => `<div style="display:flex;justify-content:space-between;gap:10px;padding:2px 0">
           <span class="mono">${esc(t.tabla.split('.')[1])}</span>
           <b style="font-variant-numeric:tabular-nums;color:var(--text-secondary)">${n(t.filas)}</b></div>`).join('')}
-      </div>` : `<div style="font-size:12.3px;color:var(--text-muted)">Vistas SQL agregadas</div>`}
+      </div>` : `<div style="font-size:var(--t-xs);color:var(--text-muted)">Vistas SQL agregadas</div>`}
     </div>`;
   }).join('');
 
@@ -1583,11 +1584,11 @@ function pageMethod() {
     { h:'Mercado', f:r => cbadge(r.country) },
     { h:'Divisa', f:r => `<span class="mono">${esc(r.currency)}</span>` },
     { h:'Tipo a EUR', num:true, f:r => r.rate },
-    { h:'Huso aplicado', num:true, f:r => ({ ES:'UTC+1', CO:'UTC−5', PE:'UTC−5', EC:'UTC−5', MX:'UTC−6', CL:'UTC−4', AR:'UTC−3' })[r.country] || '—' },
+    { h:'Huso aplicado', num:true, f:r => ({ ES:'UTC+1', CO:'UTC−5', PE:'UTC−5', EC:'UTC−5', MX:'UTC−6', CL:'UTC−4', AR:'UTC−3' })[r.country] || '-' },
   ], fx);
 
   const g = S.meta.generated_at;
-  document.getElementById('mt-generated').textContent = g ? new Date(g).toLocaleString('es-ES') : '—';
+  document.getElementById('mt-generated').textContent = g ? new Date(g).toLocaleString('es-ES') : '-';
 }
 
 // ---------------------------------------------------------------------------
@@ -1613,6 +1614,13 @@ function goTo(page, push = true) {
   window.scrollTo({ top: 0, behavior: 'instant' });
 }
 function render(page) {
+  // Plotly mide el contenedor en el momento de dibujar. Sobre un elemento con
+  // `display:none` la medida es 0 y cae a su ancho por defecto (700 px), asi que
+  // los graficos de la primera pagina se salian de su tarjeta hasta que algo
+  // provocaba un `resize`. Dibujar solo lo que esta visible lo evita: en el
+  // arranque, `refresh()` corre antes de que `goTo()` marque la pagina activa.
+  const host = document.getElementById('page-' + page);
+  if (!host || !host.classList.contains('active')) return;
   try { PAGES[page](); } catch (e) { console.error(`[${page}]`, e); }
   if (page === 'geo') setTimeout(() => S.maps['geo-map']?.map.invalidateSize(), 120);
 }
@@ -1632,7 +1640,7 @@ function setTheme(t) {
   document.documentElement.setAttribute('data-theme', t);
   try { localStorage.setItem('vtc-theme', t); } catch (_) {}
   const m = S.maps['geo-map'];
-  if (m) m.tiles.setUrl(tileUrl());
+  if (m) { m.tiles.setUrl(tileUrl()); m.labels?.setUrl(labelUrl()); }
   render(S.page);
 }
 
@@ -1651,8 +1659,8 @@ async function boot() {
   } catch (e) {
     document.querySelector('.main').innerHTML =
       `<div style="padding:60px 30px;max-width:640px">
-         <h1 style="font-size:22px;margin-bottom:12px">No se han podido cargar los datos</h1>
-         <p style="color:var(--text-secondary);font-size:14px">
+         <h1 style="font-size:var(--t-xl);margin-bottom:12px">No se han podido cargar los datos</h1>
+         <p style="color:var(--text-secondary);font-size:var(--t-md)">
            El informe necesita <code class="i">data/trips.json</code> y <code class="i">data/meta.json</code>.
            Genéralos con <code class="i">python scripts/export_report_data.py</code> y sirve la carpeta con
            <code class="i">python -m http.server 8080 --directory report</code>
@@ -1667,9 +1675,9 @@ async function boot() {
 
   document.getElementById('foot-meta').innerHTML =
     `${n(trips.length)} viajes · ${S.dates.length} días<br>` +
-    `Extracto de ${meta.generated_at ? new Date(meta.generated_at).toLocaleDateString('es-ES') : '—'}`;
+    `Extracto de ${meta.generated_at ? new Date(meta.generated_at).toLocaleDateString('es-ES') : '-'}`;
   document.getElementById('foot-1').textContent =
-    `Periodo ${dmy(S.dates[0])} – ${dmy(S.dates[S.dates.length-1])}`;
+    `Periodo ${dmy(S.dates[0])} a ${dmy(S.dates[S.dates.length-1])}`;
 
   buildSlicers();
 
@@ -1697,6 +1705,13 @@ async function boot() {
   });
 
   addEventListener('resize', () => { clearTimeout(S._rz); S._rz = setTimeout(() => render(S.page), 200); });
+
+  // Las fuentes se sirven con `font-display: swap`, asi que la primera pintura
+  // usa la fallback del sistema y el texto cambia de metricas cuando Plex acaba
+  // de cargar. Plotly mide el contenedor una sola vez al dibujar: si mide antes
+  // de ese cambio, los graficos se quedan con el ancho equivocado. Esperar a
+  // `document.fonts.ready` cuesta unos milisegundos y evita el reflujo.
+  try { await document.fonts.ready; } catch (_) {}
 
   S.view = S.trips;
   refresh();
