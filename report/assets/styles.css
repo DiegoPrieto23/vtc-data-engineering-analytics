@@ -497,7 +497,6 @@ a { color: var(--brand); }
 }
 .kpi-value .unit { font-size: var(--t-lg); font-weight: 400; color: var(--text-muted); margin-left: 4px; }
 .kpi-foot { font-size: var(--t-xs); color: var(--text-secondary); display: flex; align-items: center; gap: var(--s-1); }
-.kpi-spark { height: 28px; margin-top: var(--s-2); }
 
 .pill {
   display: inline-flex; align-items: center; gap: 3px;

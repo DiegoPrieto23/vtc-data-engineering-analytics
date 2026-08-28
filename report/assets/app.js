@@ -188,12 +188,11 @@ function moveTip(e) {
 // ---------------------------------------------------------------------------
 // Componentes reutilizables
 // ---------------------------------------------------------------------------
-function kpi({ label, value, unit, foot, accent, spark, hint }) {
+function kpi({ label, value, unit, foot, accent, hint }) {
   return `<div class="kpi" style="--accent:${accent || 'transparent'}">
     <div class="kpi-label">${esc(label)}${hint ? ` <span title="${esc(hint)}" style="cursor:help;opacity:.6">ⓘ</span>` : ''}</div>
     <div class="kpi-value">${value}${unit ? `<span class="unit">${unit}</span>` : ''}</div>
     <div class="kpi-foot">${foot || ''}</div>
-    ${spark ? `<div class="kpi-spark" id="${spark}"></div>` : ''}
   </div>`;
 }
 function table(el, cols, rows, opts = {}) {
@@ -449,21 +448,14 @@ function pageOverview() {
      Todo lo que sigue responde a los filtros de la barra superior.`;
 
   document.getElementById('ov-kpis').innerHTML = [
-    kpi({ label:'Viajes registrados', value:n(m.trips), foot:`<span class="pill">${n(m.billed)} facturados</span>`, spark:'sp-trips' }),
-    kpi({ label:'Ingresos', value:n(m.revenue), unit:'€', foot:`Ticket medio ${eur2(m.avgTicket)}`, spark:'sp-rev' }),
+    kpi({ label:'Viajes registrados', value:n(m.trips), foot:`<span class="pill">${n(m.billed)} facturados</span>` }),
+    kpi({ label:'Ingresos', value:n(m.revenue), unit:'€', foot:`Ticket medio ${eur2(m.avgTicket)}` }),
     kpi({ label:'Tasa de finalización', value:pct(m.completion), foot:'Viajes que acaban en destino',
           hint:'Porcentaje de viajes cuyo motivo de cierre es drop_off' }),
     kpi({ label:'Espera media', value:n1(m.avgWait), unit:'min', foot:`Trayecto ${n1(m.avgEff)} min`,
           hint:'Derivada de las diferencias entre eventos, no medida directamente' }),
     kpi({ label:'Cobertura', value:`${m.countries}`, unit:`países`, foot:`${n(m.cities)} áreas urbanas · ${n(m.drivers)} conductores` }),
   ].join('');
-
-  const spark = (id, vals, color) => plot(id,
-    [{ x: daily.map(d => d.date), y: vals, type:'scatter', mode:'lines', line:{ color, width:2, shape:'linear' },
-       fill:'tozeroy', fillcolor: alpha(color, .16), hoverinfo:'skip' }],
-    { margin:{l:0,r:0,t:2,b:0}, xaxis:{ visible:false }, yaxis:{ visible:false } });
-  spark('sp-trips', daily.map(d => d.trips), css('--series-1'));
-  spark('sp-rev',   daily.map(d => d.revenue), css('--series-3'));
 
   plot('ov-trips-day', [{
     x: daily.map(d => d.date), y: daily.map(d => d.trips), type:'bar',
